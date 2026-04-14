@@ -97,11 +97,7 @@
                 <input id="ax-pass" type="password" placeholder="••••••••" style="margin:8px 0 35px;">
                 <button onclick="coreLogin()" class="btn btn-p" style="width:100%; height:60px; justify-content:center; font-size:16px;">Verify Permissions</button>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:25px;">
-                <button onclick="fillAuth('super')" style="background:#f1f5f9; border:none; padding:12px; border-radius:12px; font-weight:800; font-size:10px; cursor:pointer;">Super Authority</button>
-                <button onclick="fillAuth('admin')" style="background:#f1f5f9; border:none; padding:12px; border-radius:12px; font-weight:800; font-size:10px; cursor:pointer;">Service Lead</button>
-                <button onclick="fillAuth('agent')" style="background:#f1f5f9; border:none; padding:12px; border-radius:12px; font-weight:800; font-size:10px; cursor:pointer;">Support Pro</button>
-            </div>
+            <p style="font-size:10px; color:var(--sub); font-weight:800; margin-top:20px; text-transform:uppercase; letter-spacing:10.5px;">SECURED ACCESS ONLY</p>
         </div>
     </div>
 
@@ -178,12 +174,6 @@
         defaults.forEach(d => { if(!STATE.users.find(u=>u.email===d.email)) STATE.users.push(d); });
         store.setItem('app_users_db', JSON.stringify(STATE.users));
 
-        const fillAuth = (type) => {
-            const d = defaults.find(x => x.role.includes(type));
-            document.getElementById('ax-mail').value = d.email;
-            document.getElementById('ax-pass').value = d.pass;
-            coreLogin();
-        };
 
         const coreLogin = () => {
             const m = document.getElementById('ax-mail').value.trim();
@@ -201,6 +191,10 @@
         };
 
         const switchTab = (id, el) => {
+            // STOP POLLING
+            if(window.agentChatPoller) clearInterval(window.agentChatPoller);
+            window.activeAgentTicketId = null;
+
             if(el) {
                 document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('active'));
                 el.classList.add('active');
@@ -478,17 +472,72 @@
             Swal.fire('No Results', 'No user found matching that identity.', 'info');
         };
 
-        const solveTicket = (id) => {
-            Swal.fire({
-                title: 'Live Response',
-                input: 'textarea',
-                inputPlaceholder: 'Type reply for student...',
-                confirmButtonText: 'Push to App'
-            }).then(res => {
-                if(res.isConfirmed) {
-                    Swal.fire('Sent', 'Your response has been globally dispatched.', 'success');
-                }
+        window.activeAgentTicketId = null;
+
+        const solveTicket = async (id) => {
+            window.activeAgentTicketId = id;
+            const res = await fetch('/api/support');
+            const tickets = await res.json();
+            const t = tickets.find(x => x._id === id);
+            
+            const area = document.getElementById('view-port');
+            area.innerHTML = `
+                <div class="view-pane" style="height:calc(100vh - 120px); display:flex; flex-direction:column;">
+                    <div class="c-hdr">
+                        <h3><i class="fa-solid fa-headset"></i> Support Session: ${t.user}</h3>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="viewUserProfile('${t.user}')" class="btn" style="background:var(--p); color:white; font-size:10px;">Audit User</button>
+                            <button onclick="switchTab('support')" class="btn" style="background:#eee; font-size:10px;">Back to Queue</button>
+                        </div>
+                    </div>
+                    <div id="agent-chat-msgs" style="flex:1; padding:30px; overflow-y:auto; background:#f8fafc; display:flex; flex-direction:column; gap:15px;">
+                         <!-- Messages load here -->
+                    </div>
+                    <div style="padding:20px; background:white; border-top:1.5px solid var(--border); display:flex; gap:15px; align-items:center;">
+                        <input id="agent-chat-input" placeholder="Type message to student..." style="flex:1; padding:15px; border-radius:12px;">
+                        <button onclick="sendAgentMsg()" class="btn btn-p" style="height:50px;">Dispatch</button>
+                    </div>
+                </div>
+            `;
+
+            // Start polling for this session
+            window.agentChatPoller = setInterval(pollAgentMessages, 3000);
+        };
+
+        const pollAgentMessages = async () => {
+            if(!window.activeAgentTicketId) return clearInterval(window.agentChatPoller);
+            try {
+                const res = await fetch('/api/support');
+                const tickets = await res.json();
+                const t = tickets.find(x => x._id === window.activeAgentTicketId);
+                const cm = document.getElementById('agent-chat-msgs');
+                if(!cm) return clearInterval(window.agentChatPoller);
+
+                cm.innerHTML = (t.messages || []).map(m => {
+                    const isMe = m.sender === 'Agent' || m.sender === storage.getItem('ax_name');
+                    return `
+                        <div style="background:${isMe?'var(--p)':'white'}; color:${isMe?'white':'var(--s)'}; padding:15px; border-radius:20px; max-width:70%; align-self:${isMe?'flex-end':'flex-start'}; box-shadow:0 4px 10px rgba(0,0,0,0.05); font-weight:700; font-size:13px;">
+                            <small style="opacity:0.7; display:block; margin-bottom:5px;">${m.sender}</small>
+                            ${m.text}
+                        </div>
+                    `;
+                }).join('');
+                cm.scrollTop = cm.scrollHeight;
+            } catch(e) {}
+        };
+
+        const sendAgentMsg = async () => {
+            const inp = document.getElementById('agent-chat-input');
+            const text = inp.value.trim();
+            if(!text || !window.activeAgentTicketId) return;
+            
+            inp.value = '';
+            await fetch(`/api/support/${window.activeAgentTicketId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sender: storage.getItem('ax_name') || 'Agent', text: text })
             });
+            pollAgentMessages();
         };
 
         const markResolved = async (id) => {
