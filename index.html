@@ -169,7 +169,7 @@
             switchTab('overview');
         };
 
-        const switchTab = (tab) => {
+        const switchTab = async (tab) => {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const target = Array.from(document.querySelectorAll('.nav-item')).find(el => el.innerText.toLowerCase().includes(tab));
             if(target) target.classList.add('active');
@@ -184,7 +184,7 @@
             if(tab === 'subscriptions') renderSubs(area);
         };
 
-        const renderOverview = (area) => {
+        const renderOverview = async (area) => {
             const products = JSON.parse(storage.getItem(PRODUCTS_KEY)) || [];
             const tickets = JSON.parse(storage.getItem(SUPPORT_KEY)) || [];
             area.innerHTML = `
@@ -193,7 +193,7 @@
                         <div class="stat-card"><h3>Total Revenue</h3><div class="val">₹24,850</div><div class="trend"><i class="fa-solid fa-arrow-up"></i> 12% Month</div></div>
                         <div class="stat-card"><h3>Member Units</h3><div class="val">${USERS.length}</div><div class="trend"><i class="fa-solid fa-arrow-up"></i> 4% Week</div></div>
                         <div class="stat-card"><h3>Listing Volume</h3><div class="val">${products.length}</div><div class="trend" style="color:var(--warning)">Stable</div></div>
-                        <div class="stat-card"><h3>Active Tickets</h3><div class="val">${tickets.length}</div><div class="trend" style="color:var(--danger)">Urgent Req</div></div>
+                        <div class="stat-card"><h3>Active Tickets</h3><div id="ticket-count-val" class="val">${tickets.length}</div><div class="trend" style="color:var(--danger)">Urgent Req</div></div>
                     </div>
                     <div style="display:grid; grid-template-columns: 2fr 1fr; gap:25px;">
                         <div class="data-card"><div class="card-header"><h2>Market Health</h2></div><div style="padding:20px;"><canvas id="healthChart"></canvas></div></div>
@@ -212,27 +212,52 @@
         const renderUsers = (area) => {
             const role = storage.getItem('admin_role');
             area.innerHTML = `
-                <div class="view-pane data-card">
-                    <div class="card-header"><h2>Registered Base</h2><button class="badge" style="background:var(--accent); color:white; border:none; cursor:pointer;">Export CSV</button></div>
-                    <table class="table">
-                        <thead><tr><th>Name</th><th>Identity</th><th>Clearance</th><th>Actions</th></tr></thead>
-                        <tbody>
-                            ${USERS.map((u,i)=>`
-                                <tr>
-                                    <td>${u.name}</td>
-                                    <td style="color:var(--subtext)">${u.email}</td>
-                                    <td><span class="badge ${u.role==='admin'?'badge-warning':'badge-success'}">${u.role||'user'}</span></td>
-                                    <td>
-                                        <button class="btn-circle" style="background:#f1f5f9;"><i class="fa-solid fa-eye"></i></button>
-                                        ${role==='superadmin' && u.role!=='superadmin' ? `<button onclick="deleteUser('${u.email}')" class="btn-circle" style="background:#fef2f2; color:var(--danger); margin-left:5px;"><i class="fa-solid fa-trash"></i></button>` : ''}
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                <div class="view-pane">
+                    ${role === 'superadmin' ? `
+                    <div class="data-card" style="margin-bottom:25px; padding:25px; background:var(--primary); color:white;">
+                        <h2 style="margin-bottom:15px; color:white;">Register New Admin</h2>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                            <input id="new-adm-name" placeholder="Full Name" style="padding:12px; border-radius:10px; border:none;">
+                            <input id="new-adm-email" placeholder="Admin Email" style="padding:12px; border-radius:10px; border:none;">
+                            <input id="new-adm-pass" placeholder="Passcode" style="padding:12px; border-radius:10px; border:none;">
+                        </div>
+                        <button onclick="createAdmin()" style="margin-top:15px; padding:12px 25px; background:var(--accent); color:white; border-radius:10px; border:none; font-weight:900; cursor:pointer;">Authorize Admin</button>
+                    </div>
+                    ` : ''}
+
+                    <div class="data-card">
+                        <div class="card-header"><h2>Registered Base</h2></div>
+                        <table class="table">
+                            <thead><tr><th>Name</th><th>Identity</th><th>Clearance</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                ${USERS.map((u,i)=>`
+                                    <tr>
+                                        <td>${u.name}</td>
+                                        <td style="color:var(--subtext)">${u.email}</td>
+                                        <td><span class="badge ${u.role==='admin'?'badge-warning':u.role==='superadmin'?'badge-danger':'badge-success'}">${u.role||'user'}</span></td>
+                                        <td>
+                                            ${role==='superadmin' && u.role!=='superadmin' ? `<button onclick="deleteUser('${u.email}')" class="btn-circle" style="background:#fef2f2; color:var(--danger);"><i class="fa-solid fa-trash"></i></button>` : '<i class="fa-solid fa-check"></i>'}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             `;
         };
+
+        const createAdmin = () => {
+            const name = document.getElementById('new-adm-name').value;
+            const email = document.getElementById('new-adm-email').value;
+            const pass = document.getElementById('new-adm-pass').value;
+            if(!name || !email || !pass) return Swal.fire('Error','Fill all fields','warning');
+            
+            USERS.push({ name, email, pass, role: 'admin' });
+            storage.setItem(USERS_KEY, JSON.stringify(USERS));
+            Swal.fire('Success','New Sub-Admin Created','success');
+            renderUsers(document.getElementById('main-content'));
+        }
 
         const renderSupport = (area) => {
             const tickets = JSON.parse(storage.getItem(SUPPORT_KEY)) || [];
@@ -292,6 +317,19 @@
             storage.removeItem('admin_is_logged');
             location.reload();
         }
+
+        // Real-time Notification Logic
+        const checkNotifications = () => {
+            const tickets = JSON.parse(storage.getItem(SUPPORT_KEY)) || [];
+            const badge = document.querySelector('.header .badge');
+            if(badge) {
+                badge.innerText = tickets.length;
+                badge.style.display = tickets.length > 0 ? 'block' : 'none';
+            }
+            const vc = document.getElementById('ticket-count-val');
+            if(vc) vc.innerText = tickets.length;
+        };
+        setInterval(checkNotifications, 3000);
 
         if(storage.getItem('admin_is_logged') === 'true') showApp();
     </script>
