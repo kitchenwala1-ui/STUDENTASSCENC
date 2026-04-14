@@ -58,6 +58,9 @@
                     <a href="javascript:void(0)" onclick="window.toggleAuth('forget')" style="color:#6366f1; font-weight:800; font-size:12px; text-decoration:none;">Forget Password?</a>
                 </div>
                 <button class="btn-full" onclick="window.handleLogin();" style="padding:18px; font-size:16px; font-weight:900; background:linear-gradient(135deg, #6366f1, #4f46e5); box-shadow:0 12px 24px rgba(99,102,241,0.2); width:100%; border:none; border-radius:18px; cursor:pointer; color:white;">Unlock Nest</button>
+                <div style="text-align:center; margin-top:15px;">
+                    <a href="javascript:void(0)" onclick="window.openAdminLogin()" style="color:#64748b; font-size:12px; font-weight:700; text-decoration:none;">Go to Admin Portal →</a>
+                </div>
                 <p style="text-align:center; margin-top:35px; font-size:14px; color:#64748b; font-weight:500;">New Student? <a href="javascript:void(0)" onclick="window.toggleAuth('signup')" style="color:#6366f1; font-weight:850; text-decoration:none;">Create Account</a></p>
             </div>
         </div>
@@ -124,6 +127,29 @@
 
                 <button class="btn-full" onclick="Swal.fire({title:'Link Sent!', text:'Check your inbox for recovery steps.', icon:'success', confirmButtonColor:'#6366f1'}); window.toggleAuth('login');" style="padding:18px; font-size:16px; font-weight:900; background:linear-gradient(135deg, #6366f1, #4f46e5); box-shadow:0 12px 24px rgba(99,102,241,0.2); color:white; border:none; border-radius:18px; width:100%; cursor:pointer;">Send Recovery Link</button>
                 <p style="text-align:center; margin-top:35px; font-size:14px; color:#64748b; font-weight:500;">Remembered it? <a href="javascript:void(0)" onclick="window.toggleAuth('login')" style="color:#6366f1; font-weight:850; text-decoration:none;">Back to Login</a></p>
+            </div>
+        </div>
+        <!-- ADMIN LOGIN SCREEN -->
+        <div id="admin-login-screen" class="auth-card" style="display:none; padding:40px 30px; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-60px; right:-60px; width:150px; height:150px; background:rgba(30,41,59,0.08); border-radius:50%;"></div>
+            <div style="position:relative; z-index:2;">
+                <div style="text-align:center; margin-bottom:40px;">
+                    <div style="width:75px; height:75px; background:linear-gradient(135deg, #1e293b, #0f172a); border-radius:22px; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; box-shadow:0 15px 30px rgba(0,0,0,0.3);">
+                        <i class="fa-solid fa-shield-halved" style="color:white; font-size:32px;"></i>
+                    </div>
+                    <h2 style="font-weight:900; font-size:28px; color:#1e293b; letter-spacing:-1px;">Admin Portal</h2>
+                    <p style="color:#64748b; font-size:14px; font-weight:500;">Authorized Personnel Only.</p>
+                </div>
+                <div class="input-group" style="margin-bottom:20px;">
+                    <input id="admin-email" class="auth-input" type="email" placeholder="Admin Email" style="width:100%; padding:18px; border-radius:18px; border:2px solid #f1f5f9; background:#f8fafc; font-size:14px; font-weight:700;">
+                </div>
+                <div class="input-group" style="margin-bottom:30px;">
+                    <input id="admin-pass" class="auth-input" type="password" placeholder="Passcode" style="width:100%; padding:18px; border-radius:18px; border:2px solid #f1f5f9; background:#f8fafc; font-size:14px; font-weight:700;">
+                </div>
+                <button class="btn-full" onclick="window.handleAdminLogin()" style="padding:18px; background:#1e293b; color:white; font-weight:900; width:100%; border-radius:18px; border:none; cursor:pointer;">Authenticate</button>
+                <div style="text-align:center; margin-top:25px;">
+                    <a href="javascript:void(0)" onclick="window.toggleAuth('login')" style="color:#6366f1; font-weight:800; font-size:12px;">Back to Student App</a>
+                </div>
             </div>
         </div>
     </div>
@@ -230,14 +256,14 @@
 
         <nav class="bottom-nav" style="z-index:9999999 !important;">
             <div class="nav-item active" data-tab="home" onclick="window.switchTab('home', this)"><i class="fa-solid fa-house"></i><span>Home</span></div>
-            <div class="nav-item" data-tab="rooms" onclick="window.switchTab('rooms', this)"><i class="fa-solid fa-bed"></i><span>Rooms</span></div>
-            <div class="nav-item" data-tab="sell" onclick="alert('STARTING FLOW'); window.startListingFlow();" style="flex:1.5; cursor:pointer;">
+            <div class="nav-item" data-tab="plans" onclick="window.switchTab('plans', this)"><i class="fa-solid fa-credit-card"></i><span>Subscription</span></div>
+            <div class="nav-item" data-tab="sell" onclick="window.startListingFlow();" style="flex:1.5; cursor:pointer;">
                 <div style="width:55px; height:55px; background:#6366f1; border-radius:15px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 15px rgba(99,102,241,0.3); margin-top:-10px;">
                     <i class="fa-solid fa-plus" style="color:white; font-size:24px;"></i>
                 </div>
                 <span style="font-weight:900; color:#6366f1; font-size:10px; margin-top:4px;">Post Ad</span>
             </div>
-            <div class="nav-item" data-tab="plans" onclick="window.switchTab('plans', this)"><i class="fa-solid fa-credit-card"></i><span>Subscription</span></div>
+            <div class="nav-item" data-tab="my-listings" onclick="window.showScreen('my-listings'); window.setActiveNavItem(this);"><i class="fa-solid fa-list-check"></i><span>My Listings</span></div>
             <div class="nav-item" data-tab="chat" onclick="window.switchTab('chat', this)"><i class="fa-solid fa-comment-dots"></i><span>Chat</span></div>
         </nav>
     </div>
@@ -275,16 +301,11 @@
         };
 
         // Initialize DB
-        let USERS = [];
-        try {
-            USERS = JSON.parse(storage.getItem(USERS_KEY)) || [];
-        } catch(e) { USERS = []; }
-
-        if (!Array.isArray(USERS) || USERS.length === 0) {
-            USERS = [{ name: 'Demo User', email: 'admin@admin.com', pass: 'admin123', role: 'user' }];
-            storage.setItem(USERS_KEY, JSON.stringify(USERS));
-        }
-        console.log("App Users Initialized:", USERS.length);
+        let USERS = JSON.parse(storage.getItem(USERS_KEY)) || [
+            { name: 'System Admin', email: 'admin@test.com', pass: 'admin123', role: 'admin' },
+            { name: 'Super Authority', email: 'super@test.com', pass: 'super786', role: 'superadmin' }
+        ];
+        if (!storage.getItem(USERS_KEY)) storage.setItem(USERS_KEY, JSON.stringify(USERS));
         
         let ORDERS = JSON.parse(storage.getItem('app_orders_db')) || [];
         const syncOrders = () => storage.setItem('app_orders_db', JSON.stringify(ORDERS));
@@ -1795,6 +1816,92 @@
             `;
         };
 
+        window.openAdminLogin = () => {
+            document.querySelectorAll('.auth-card').forEach(s => s.style.display = 'none');
+            document.getElementById('admin-login-screen').style.display = 'block';
+        };
+
+        window.handleAdminLogin = () => {
+            const email = document.getElementById('admin-email').value.trim();
+            const pass = document.getElementById('admin-pass').value.trim();
+            const user = USERS.find(u => u.email === email && u.pass === pass && (u.role === 'admin' || u.role === 'superadmin'));
+            
+            if(user) {
+                storage.setItem('is_logged_in', 'true');
+                storage.setItem('user_name', user.name);
+                storage.setItem('user_email', user.email);
+                storage.setItem('user_role', user.role);
+                location.reload();
+            } else {
+                Swal.fire('Access Denied', 'Invalid Admin Credentials', 'error');
+            }
+        };
+
+        window.renderAdminDashboard = (tab = 'overview') => {
+            const mc = document.getElementById('main-content');
+            const header = document.querySelector('.app-header');
+            const nav = document.querySelector('.bottom-nav');
+            if(header) header.style.display = 'none';
+            if(nav) nav.style.display = 'none';
+            
+            const role = storage.getItem('user_role');
+
+            let content = '';
+            if(tab === 'overview') {
+                content = `
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:25px;">
+                        <div style="background:linear-gradient(135deg, #10b981, #059669); padding:20px; border-radius:24px; color:white;">
+                            <small>TOTAL USERS</small>
+                            <h2 style="margin:0;">${USERS.length}</h2>
+                        </div>
+                        <div style="background:linear-gradient(135deg, #6366f1, #4f46e5); padding:20px; border-radius:24px; color:white;">
+                            <small>ACTIVE DEALS</small>
+                            <h2 style="margin:0;">${PRODUCTS.length}</h2>
+                        </div>
+                    </div>
+                `;
+            } else if(tab === 'management') {
+                content = `
+                    <div style="display:flex; flex-direction:column; gap:15px;">
+                        ${USERS.map(u => `
+                            <div style="background:white; padding:15px; border-radius:18px; border:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+                                <div><b style="color:#1e293b;">${u.name}</b><br><small style="color:#64748b;">${u.email} (${u.role})</small></div>
+                                ${role === 'superadmin' && u.role !== 'superadmin' ? `<button onclick="window.removeUser('${u.email}')" style="background:#fef2f2; border:none; color:#ef4444; padding:8px 12px; border-radius:10px; font-weight:800; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            mc.innerHTML = `
+                <div class="section" style="padding-top:20px; padding-bottom:100px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                        <div>
+                            <h1 style="font-weight:900;">${role === 'superadmin' ? 'Super Authority' : 'Admin Panel'}</h1>
+                            <p style="color:#64748b;">${role === 'superadmin' ? 'Global Control Dashboard' : 'Operational Monitoring'}</p>
+                        </div>
+                        <button onclick="window.handleLogout()" style="background:#fef2f2; border:none; color:#ef4444; padding:10px; border-radius:12px;"><i class="fa-solid fa-power-off"></i></button>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">
+                        <div onclick="window.renderAdminDashboard('overview')" style="padding:10px 20px; background:${tab==='overview'?'#1e293b':'white'}; color:${tab==='overview'?'white':'#64748b'}; border-radius:12px; font-weight:800; cursor:pointer;">Overview</div>
+                        <div onclick="window.renderAdminDashboard('management')" style="padding:10px 20px; background:${tab==='management'?'#1e293b':'white'}; color:${tab==='management'?'white':'#64748b'}; border-radius:12px; font-weight:800; cursor:pointer;">User Management</div>
+                    </div>
+                    ${content}
+                </div>
+            `;
+        };
+
+        window.removeUser = (email) => {
+            Swal.fire({ title: 'Delete User?', text: 'This will permanently remove this account.', icon: 'warning', showCancelButton: true }).then(res => {
+                if(res.isConfirmed) {
+                    USERS = USERS.filter(u => u.email !== email);
+                    storage.setItem(USERS_KEY, JSON.stringify(USERS));
+                    window.renderAdminDashboard('management');
+                    Swal.fire('Deleted', 'User removed successfully', 'success');
+                }
+            });
+        };
+
         window.filterChats = () => {
             const query = document.getElementById('chat-search').value.toLowerCase();
             const items = document.querySelectorAll('.chat-list-item');
@@ -1828,6 +1935,11 @@
             }
 
             if (isLoggedIn) {
+                const role = storage.getItem('user_role');
+                if (role === 'admin' || role === 'superadmin') {
+                    window.renderAdminDashboard();
+                    return;
+                }
                 const header = document.querySelector('.app-header');
                 const nav = document.querySelector('.bottom-nav');
                 const sellerCard = document.querySelector('.seller-card');
@@ -1926,20 +2038,26 @@
                         const currentTab = 'home';
                         nav.innerHTML = `
                             <div class="nav-item ${currentTab==='home'?'active':''}" data-tab="home" onclick="window.switchTab('home', this)"><i class="fa-solid fa-house"></i><span>Home</span></div>
-                            <div class="nav-item" data-tab="rooms" onclick="window.switchTab('rooms', this)"><i class="fa-solid fa-bed"></i><span>Rooms</span></div>
+                            <div class="nav-item" data-tab="plans" onclick="window.switchTab('plans', this)"><i class="fa-solid fa-credit-card"></i><span>Subscription</span></div>
                             <div class="nav-item" data-tab="sell" onclick="window.switchTab('sell', this)" style="flex:1.5; cursor:pointer; position:relative; z-index:10000;">
                                 <div style="width:50px; height:50px; background:#6366f1; border-radius:15px; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 15px rgba(99,102,241,0.3); margin: -15px auto 0; pointer-events:none;">
                                     <i class="fa-solid fa-plus" style="color:white; font-size:22px;"></i>
                                 </div>
                                 <span style="font-weight:900; color:#6366f1; font-size:10px; margin-top:4px; pointer-events:none;">Post Ad</span>
                             </div>
-                            <div class="nav-item" data-tab="plans" onclick="window.switchTab('plans', this)"><i class="fa-solid fa-credit-card"></i><span>Subscription</span></div>
+                            <div class="nav-item" data-tab="my-listings" onclick="window.showScreen('my-listings'); window.setActiveNavItem(this);"><i class="fa-solid fa-list-check"></i><span>My Listings</span></div>
                             <div class="nav-item" data-tab="chat" onclick="window.switchTab('chat', this)"><i class="fa-solid fa-comment-dots"></i><span>Chat</span></div>
                         `;
                     }
                     renderHome();
                 }
             }
+        };
+
+        window.setActiveNavItem = (el) => {
+            if(!el) return;
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
         };
 
         document.addEventListener('DOMContentLoaded', () => {
