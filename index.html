@@ -388,7 +388,7 @@
         };
 
         window.toggleAuth = (screen) => {
-            const screens = ['login', 'signup', 'forget'];
+            const screens = ['login', 'signup', 'forget', 'admin-login'];
             screens.forEach(s => {
                 const el = document.getElementById(s + '-screen');
                 if(el) el.style.display = 'none';
@@ -1817,8 +1817,7 @@
         };
 
         window.openAdminLogin = () => {
-            document.querySelectorAll('.auth-card').forEach(s => s.style.display = 'none');
-            document.getElementById('admin-login-screen').style.display = 'block';
+            window.toggleAuth('admin-login');
         };
 
         window.handleAdminLogin = () => {
@@ -2051,6 +2050,9 @@
                     }
                     renderHome();
                 }
+            } else {
+                const auth = document.getElementById('auth-container');
+                if(auth) auth.style.display = 'flex';
             }
         };
 
