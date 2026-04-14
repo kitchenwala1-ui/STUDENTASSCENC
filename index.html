@@ -147,6 +147,12 @@
                     <input id="admin-pass" class="auth-input" type="password" placeholder="Passcode" style="width:100%; padding:18px; border-radius:18px; border:2px solid #f1f5f9; background:#f8fafc; font-size:14px; font-weight:700;">
                 </div>
                 <button class="btn-full" onclick="window.handleAdminLogin()" style="padding:18px; background:#1e293b; color:white; font-weight:900; width:100%; border-radius:18px; border:none; cursor:pointer;">Authenticate</button>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+                    <button onclick="document.getElementById('admin-email').value='admin@test.com'; document.getElementById('admin-pass').value='admin123'; window.handleAdminLogin();" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:#1e293b; cursor:pointer;">Demo Admin</button>
+                    <button onclick="document.getElementById('admin-email').value='super@test.com'; document.getElementById('admin-pass').value='super786'; window.handleAdminLogin();" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:#1e293b; cursor:pointer;">Demo Super</button>
+                </div>
+
                 <div style="text-align:center; margin-top:25px;">
                     <a href="javascript:void(0)" onclick="window.toggleAuth('login')" style="color:#6366f1; font-weight:800; font-size:12px;">Back to Student App</a>
                 </div>
@@ -301,10 +307,10 @@
         };
 
         // Initialize DB
-        let USERS = JSON.parse(storage.getItem(USERS_KEY)) || [
-            { name: 'System Admin', email: 'admin@test.com', pass: 'admin123', role: 'admin' },
-            { name: 'Super Authority', email: 'super@test.com', pass: 'super786', role: 'superadmin' }
-        ];
+        let USERS = JSON.parse(storage.getItem(USERS_KEY)) || [];
+        // Force Add Admins if missing
+        if(!USERS.find(u => u.role === 'admin')) USERS.push({ name: 'System Admin', email: 'admin@test.com', pass: 'admin123', role: 'admin' });
+        if(!USERS.find(u => u.role === 'superadmin')) USERS.push({ name: 'Super Authority', email: 'super@test.com', pass: 'super786', role: 'superadmin' });
         if (!storage.getItem(USERS_KEY)) storage.setItem(USERS_KEY, JSON.stringify(USERS));
         
         let ORDERS = JSON.parse(storage.getItem('app_orders_db')) || [];
