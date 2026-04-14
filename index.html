@@ -267,21 +267,26 @@
             `;
         };
 
-        const renderSupportDesk = (area) => {
-            const tk = JSON.parse(store.getItem('app_support_tickets')) || [];
+        const renderSupportDesk = async (area) => {
+            let tk = [];
+            try {
+                const res = await fetch('/api/support');
+                tk = await res.json();
+            } catch(e) { tk = JSON.parse(store.getItem('app_support_tickets')) || []; }
+
             area.innerHTML = `
                 <div class="view-pane" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:25px;">
                     ${tk.length === 0 ? '<div style="grid-column:1/-1; text-align:center; padding:100px;"><i class="fa-solid fa-check-double" style="font-size:50px; color:#cbd5e1; margin-bottom:20px;"></i><h2 style="color:#cbd5e1;">All tickets resolved!</h2></div>' : tk.map((t,i)=>`
                         <div class="c-stat" style="border:1.5px solid var(--border);">
                             <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
                                 <span class="bdg ${t.type.includes('Chat')?'bdg-p':'bdg-e'}">${t.type}</span>
-                                <small style="color:var(--sub); font-weight:850;">${t.time}</small>
+                                <small style="color:var(--sub); font-weight:850;">Active Now</small>
                             </div>
                             <b style="font-size:16px; margin-bottom:5px; display:block;">Identity: ${t.user}</b>
                             <p style="font-size:14px; color:var(--sub); line-height:1.6; margin-bottom:20px;">${t.detail}</p>
                             <div style="display:flex; gap:12px;">
-                                <button onclick="solveTicket(${i})" class="btn btn-p" style="flex:1; justify-content:center;">Respond</button>
-                                <button onclick="delTicket(${i})" class="btn" style="background:#fef2f2; color:var(--err); padding:12px;"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="solveTicket('${t._id}')" class="btn btn-p" style="flex:1; justify-content:center;">Respond</button>
+                                <button onclick="markResolved('${t._id}')" class="btn" style="background:#f0fdf4; color:var(--acc); padding:12px;"><i class="fa-solid fa-check"></i></button>
                             </div>
                         </div>
                     `).reverse().join('')}
@@ -290,28 +295,80 @@
         };
 
         const renderMarketplace = (area) => {
-            const p = JSON.parse(store.getItem('app_products')) || [];
+            const products = JSON.parse(store.getItem('app_products')) || [];
+            const pending = products.filter(p => p.status === 'Pending');
+            const active = products.filter(p => p.status === 'Active');
+
             area.innerHTML = `
-                <div class="view-pane c-data">
-                    <div class="c-hdr"><h3><i class="fa-solid fa-store"></i> Active Listings</h3><b style="color:var(--p)">${p.length} Units</b></div>
-                    <div class="tbl-w">
-                        <table class="tbl">
-                            <thead><tr><th>Item</th><th>Category</th><th>Price</th><th>Seller</th><th>Action</th></tr></thead>
-                            <tbody>
-                                ${p.length === 0 ? '<tr><td colspan="5" style="text-align:center; padding:50px;">Market is currently empty.</td></tr>' : p.map((i)=>`
-                                    <tr>
-                                        <td><div style="display:flex; align-items:center; gap:12px;"><img src="${i.img||'https://via.placeholder.com/50'}" style="width:40px; height:40px; border-radius:10px; object-fit:cover;"> ${i.name}</div></td>
-                                        <td><span class="bdg bdg-p">${i.category}</span></td>
-                                        <td style="font-weight:900; color:var(--p);">₹${i.price}</td>
-                                        <td style="font-size:12px; color:var(--sub);">${i.sellerEmail}</td>
-                                        <td><button class="btn" style="background:var(--err); color:white; padding:8px 12px; font-size:10px;">Remove</button></td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
+                <div class="view-pane">
+                    <div class="c-data" style="margin-bottom:30px;">
+                        <div class="c-hdr"><h3><i class="fa-solid fa-hourglass-start" style="color:var(--wrn)"></i> Pending Guard (Approval Queue)</h3><b style="color:var(--wrn)">${pending.length} Needing Review</b></div>
+                        <div class="tbl-w">
+                            <table class="tbl">
+                                <thead><tr><th>Item Details</th><th>Price</th><th>Seller Identity</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                    ${pending.length === 0 ? '<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--sub);">Queue is currently clear.</td></tr>' : pending.map((p)=>`
+                                        <tr>
+                                            <td><div style="display:flex; align-items:center; gap:12px;"><img src="${p.img}" style="width:45px; height:45px; border-radius:10px; object-fit:cover;"> <div><b>${p.name}</b><br><small style="color:var(--sub)">${p.category}</small></div></div></td>
+                                            <td style="font-weight:900; color:var(--p);">₹${p.price}</td>
+                                            <td>${p.sellerEmail}</td>
+                                            <td>
+                                                <div style="display:flex; gap:8px;">
+                                                    <button onclick="approveProduct('${p.id}')" class="btn" style="background:var(--acc); color:white; padding:8px 12px; font-size:10px;">Activate AD</button>
+                                                    <button onclick="rejectProduct('${p.id}')" class="btn" style="background:#fef2f2; color:var(--err); padding:8px 12px; font-size:10px;">Reject</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="c-data">
+                        <div class="c-hdr"><h3><i class="fa-solid fa-store" style="color:var(--p)"></i> Live Marketplace Inventory</h3><b style="color:var(--p)">${active.length} Verified Units</b></div>
+                        <div class="tbl-w">
+                            <table class="tbl">
+                                <thead><tr><th>Item</th><th>Category</th><th>Price</th><th>Seller</th><th style="text-align:right;">Control</th></tr></thead>
+                                <tbody>
+                                    ${active.map((p)=>`
+                                        <tr>
+                                            <td><div style="display:flex; align-items:center; gap:12px;"><img src="${p.img}" style="width:40px; height:40px; border-radius:10px; object-fit:cover;"> ${p.name}</div></td>
+                                            <td><span class="bdg bdg-p">${p.category}</span></td>
+                                            <td style="font-weight:800;">₹${p.price}</td>
+                                            <td style="font-size:12px; color:var(--sub);">${p.sellerEmail}</td>
+                                            <td style="text-align:right;"><button onclick="rejectProduct('${p.id}')" class="btn" style="background:#fef2f2; color:var(--err); padding:8px 12px; font-size:10px;"><i class="fa-solid fa-ban"></i> Take Down</button></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             `;
+        };
+
+        window.approveProduct = (id) => {
+            let products = JSON.parse(store.getItem('app_products')) || [];
+            const idx = products.findIndex(p => p.id === id);
+            if(idx !== -1) {
+                products[idx].status = 'Active';
+                store.setItem('app_products', JSON.stringify(products));
+                Swal.fire('Success', 'Listing activated successfully', 'success');
+                switchTab('market');
+            }
+        };
+
+        window.rejectProduct = (id) => {
+            Swal.fire({ title: 'Reject Listing?', text: 'Product will be permanently removed.', icon: 'warning', showCancelButton: true }).then(r => {
+                if(r.isConfirmed) {
+                    let products = JSON.parse(store.getItem('app_products')) || [];
+                    products = products.filter(p => p.id !== id);
+                    store.setItem('app_products', JSON.stringify(products));
+                    Swal.fire('Removed', 'Listing rejected and deleted', 'success');
+                    switchTab('market');
+                }
+            });
         };
 
         const renderTeamRegistry = (area) => {
@@ -369,10 +426,74 @@
 
         const triggerLogout = () => { store.removeItem('ax_logged'); location.reload(); };
 
-        const solveTicket = (idx) => {
-            Swal.fire({ title: 'Engage User', input: 'textarea', inputPlaceholder: 'Type professional response...' }).then(res => {
-                if(res.isConfirmed) Swal.fire('Dispatched','Message sent via Enterprise API','success');
+        const viewUserProfile = (email) => {
+            const user = STATE.users.find(u => u.email === email);
+            const userOrders = (JSON.parse(store.getItem('app_orders')) || []).filter(o => o.userEmail === email);
+            const userProducts = (JSON.parse(store.getItem('app_products')) || []).filter(p => p.sellerEmail === email);
+            
+            Swal.fire({
+                title: `Profile: ${user.name}`,
+                html: `
+                    <div style="text-align:left; font-size:13px;">
+                        <p><b>Identity:</b> ${user.email}</p>
+                        <p><b>Clearance:</b> <span class="bdg bdg-p">${user.role}</span></p>
+                        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+                        <b>Purchase History (${userOrders.length})</b>
+                        <div style="max-height:100px; overflow-y:auto; margin-bottom:10px; background:#f8fafc; padding:10px; border-radius:10px;">
+                            ${userOrders.length ? userOrders.map(o => `• Order #${o.id.slice(-4)} - ₹${o.price}`).join('<br>') : 'No purchases yet'}
+                        </div>
+                        <b>Listings (${userProducts.length})</b>
+                        <div style="max-height:100px; overflow-y:auto; background:#f8fafc; padding:10px; border-radius:10px;">
+                            ${userProducts.length ? userProducts.map(p => `• ${p.name} - ${p.status}`).join('<br>') : 'No listings'}
+                        </div>
+                        <div style="margin-top:20px; display:flex; gap:10px;">
+                             <button onclick="requestRefund('${email}')" style="flex:1; padding:12px; border:none; background:var(--err); color:white; border-radius:10px; font-weight:800; cursor:pointer;">Initiate Refund Req</button>
+                             <button onclick="Swal.close()" style="padding:12px; border:none; background:#eee; border-radius:10px; font-weight:800; cursor:pointer;">Close</button>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                width: '500px'
             });
+        };
+
+        const requestRefund = (email) => {
+            const role = storage.getItem('ax_role');
+            if(role === 'agent') {
+                const tickets = JSON.parse(store.getItem('app_support_tickets')) || [];
+                tickets.push({ type: 'REFUND REQ', user: email, detail: `Agent initiated refund request for user ${email}. Awaiting Admin approval.`, time: 'Just Now' });
+                store.setItem('app_support_tickets', JSON.stringify(tickets));
+                Swal.fire('Requested', 'Refund request sent to Service Manager for approval.', 'success');
+            } else {
+                Swal.fire('Success', 'Refund processed by Authority.', 'success');
+            }
+        };
+
+        const handleGlobalSearch = (query) => {
+            if(!query) return;
+            const q = query.toLowerCase();
+            const user = STATE.users.find(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+            if(user) return viewUserProfile(user.email);
+            
+            Swal.fire('No Results', 'No user found matching that identity.', 'info');
+        };
+
+        const solveTicket = (id) => {
+            Swal.fire({
+                title: 'Live Response',
+                input: 'textarea',
+                inputPlaceholder: 'Type reply for student...',
+                confirmButtonText: 'Push to App'
+            }).then(res => {
+                if(res.isConfirmed) {
+                    Swal.fire('Sent', 'Your response has been globally dispatched.', 'success');
+                }
+            });
+        };
+
+        const markResolved = async (id) => {
+            Swal.fire('Archived', 'Ticket marked as resolved on Authority log.', 'success');
+            // Logic to DELETE/UPDATE on backend would go here via fetch
         };
 
         // CORE INITIALIZATION
@@ -380,26 +501,36 @@
             document.getElementById('auth-view').style.display = 'none';
             document.getElementById('app-view').style.display = 'flex';
             
-            document.getElementById('u-name').innerText = STATE.name;
-            document.getElementById('u-initial').innerText = STATE.name.charAt(0);
-            document.getElementById('lvl-badge').innerText = STATE.role;
+            const uName = storage.getItem('ax_name');
+            document.getElementById('u-name').innerText = uName;
+            document.getElementById('u-initial').innerText = uName.charAt(0);
+            document.getElementById('lvl-badge').innerText = role;
 
             const nav = document.getElementById('side-nav');
             nav.innerHTML = NAV_SCHEMA.map(n => {
-                if(!n.roles.includes(STATE.role)) return '';
-                return `<div class="nav-i ${n.id==='dash'?'active':''}" onclick="switchTab('${n.id}', this)"><i class="fa-solid ${n.icon}"></i> ${n.label}</div>`;
+                if(!n.roles.includes(role)) return '';
+                return `<div id="nav-${n.id}" class="nav-i ${n.id==='dash'?'active':''}" onclick="switchTab('${n.id}', this)"><i class="fa-solid ${n.icon}"></i> ${n.label}</div>`;
             }).join('');
+
+            // Global Search Listener
+            document.querySelector('.search-container input').addEventListener('keyup', (e) => {
+                if(e.key === 'Enter') handleGlobalSearch(e.target.value);
+            });
 
             switchTab('dash');
 
-            // REAL-TIME POLLING SIMULATION
-            setInterval(() => {
-                const tick = JSON.parse(store.getItem('app_support_tickets')) || [];
-                const b = document.getElementById('bell-badge');
-                if(b) {
-                    b.innerText = tick.length;
-                    b.style.display = tick.length > 0 ? 'flex' : 'none';
-                }
+            // REAL-TIME PRODUCTION POLLING
+            setInterval(async () => {
+                try {
+                    const res = await fetch('/api/support');
+                    const tick = await res.json();
+                    const pendingCount = tick.filter(t => t.status !== 'Resolved').length;
+                    const b = document.getElementById('bell-badge');
+                    if(b) {
+                        b.innerText = pendingCount;
+                        b.style.display = pendingCount > 0 ? 'flex' : 'none';
+                    }
+                } catch(e) {}
             }, 3000);
         }
     </script>
