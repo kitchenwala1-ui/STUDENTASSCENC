@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Authority Portal - StudentNest</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --subtext: #64748b; --border: #f1f5f9; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
+        .auth-container { height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: white; width: 100%; max-width: 400px; padding: 40px 30px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+        .input-group input { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 14px; font-weight: 700; box-sizing: border-box; outline: none; transition: 0.3s; }
+        .input-group input:focus { border-color: #1e293b; background: white; }
+        .btn-full { padding: 18px; background: #1e293b; color: white; font-weight: 900; width: 100%; border-radius: 18px; border: none; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        .btn-full:active { transform: scale(0.98); }
+        .section { padding: 25px; max-width: 800px; margin: 0 auto; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="auth-view" class="auth-container">
+        <div class="auth-card">
+            <div style="position:absolute; top:-60px; right:-60px; width:150px; height:150px; background:rgba(30,41,59,0.08); border-radius:50%;"></div>
+            <div style="position:relative; z-index:2;">
+                <div style="text-align:center; margin-bottom:40px;">
+                    <div style="width:75px; height:75px; background:linear-gradient(135deg, #1e293b, #0f172a); border-radius:22px; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; box-shadow:0 15px 30px rgba(0,0,0,0.3);">
+                        <i class="fa-solid fa-shield-halved" style="color:white; font-size:32px;"></i>
+                    </div>
+                    <h2 style="font-weight:900; font-size:28px; color:#1e293b; letter-spacing:-1px;">Authority Portal</h2>
+                    <p style="color:#64748b; font-size:14px; font-weight:500;">Authorized Personnel Only.</p>
+                </div>
+                <div class="input-group" style="margin-bottom:20px;">
+                    <input id="admin-email" type="email" placeholder="Admin Email" value="">
+                </div>
+                <div class="input-group" style="margin-bottom:30px;">
+                    <input id="admin-pass" type="password" placeholder="Passcode" value="">
+                </div>
+                <button class="btn-full" onclick="handleAdminLogin()">Authenticate</button>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+                    <button onclick="quickFill('admin')" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:#1e293b; cursor:pointer;">Demo Admin</button>
+                    <button onclick="quickFill('super')" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:#1e293b; cursor:pointer;">Demo Super</button>
+                </div>
+
+                <div style="text-align:center; margin-top:25px;">
+                    <a href="index.html" style="color:#6366f1; font-weight:800; font-size:12px; text-decoration:none;">Back to Student App</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard-view" style="display:none;"></div>
+
+    <script>
+        const USERS_KEY = 'app_users_db';
+        const storage = localStorage;
+
+        let USERS = JSON.parse(storage.getItem(USERS_KEY)) || [];
+        // Force Add Admins if missing
+        if(!USERS.find(u => u.role === 'admin')) USERS.push({ name: 'System Admin', email: 'admin@test.com', pass: 'admin123', role: 'admin' });
+        if(!USERS.find(u => u.role === 'superadmin')) USERS.push({ name: 'Super Authority', email: 'super@test.com', pass: 'super786', role: 'superadmin' });
+        storage.setItem(USERS_KEY, JSON.stringify(USERS));
+
+        const quickFill = (type) => {
+            if(type==='admin') {
+                document.getElementById('admin-email').value = 'admin@test.com';
+                document.getElementById('admin-pass').value = 'admin123';
+            } else {
+                document.getElementById('admin-email').value = 'super@test.com';
+                document.getElementById('admin-pass').value = 'super786';
+            }
+            handleAdminLogin();
+        };
+
+        const handleAdminLogin = () => {
+            const email = document.getElementById('admin-email').value.trim();
+            const pass = document.getElementById('admin-pass').value.trim();
+            const user = USERS.find(u => u.email === email && u.pass === pass && (u.role === 'admin' || u.role === 'superadmin'));
+            
+            if(user) {
+                storage.setItem('is_logged_in', 'true');
+                storage.setItem('user_role', user.role);
+                storage.setItem('user_name', user.name);
+                renderDashboard();
+            } else {
+                Swal.fire('Access Denied', 'Invalid Admin Credentials', 'error');
+            }
+        };
+
+        const renderDashboard = (tab = 'overview') => {
+            document.getElementById('auth-view').style.display = 'none';
+            const dv = document.getElementById('dashboard-view');
+            dv.style.display = 'block';
+            
+            const role = storage.getItem('user_role');
+            const PRODUCTS = JSON.parse(storage.getItem('app_products')) || [];
+
+            let content = '';
+            if(tab === 'overview') {
+                content = `
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:25px;">
+                        <div style="background:linear-gradient(135deg, #10b981, #059669); padding:20px; border-radius:24px; color:white;">
+                            <small>TOTAL USERS</small>
+                            <h2 style="margin:0;">${USERS.length}</h2>
+                        </div>
+                        <div style="background:linear-gradient(135deg, #6366f1, #4f46e5); padding:20px; border-radius:24px; color:white;">
+                            <small>ACTIVE DEALS</small>
+                            <h2 style="margin:0;">${PRODUCTS.length}</h2>
+                        </div>
+                    </div>
+                `;
+            } else if(tab === 'management') {
+                content = `
+                    <div style="display:flex; flex-direction:column; gap:15px;">
+                        ${USERS.map(u => `
+                            <div style="background:white; padding:15px; border-radius:18px; border:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; animation:fadeIn 0.3s ease;">
+                                <div><b style="color:#1e293b;">${u.name}</b><br><small style="color:#64748b;">${u.email} (${u.role})</small></div>
+                                ${role === 'superadmin' && u.role !== 'superadmin' ? `<button onclick="removeUser('${u.email}')" style="background:#fef2f2; border:none; color:#ef4444; padding:10px; border-radius:10px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            dv.innerHTML = `
+                <div class="section" style="animation:fadeIn 0.5s ease;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                        <div>
+                            <h1 style="font-weight:900; margin:0;">${role === 'superadmin' ? 'Super Authority' : 'Admin Panel'}</h1>
+                            <p style="color:#64748b; margin:5px 0 0;">Management Dashboard</p>
+                        </div>
+                        <button onclick="logout()" style="background:#fef2f2; border:none; color:#ef4444; padding:12px; border-radius:15px; cursor:pointer;"><i class="fa-solid fa-power-off"></i></button>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-bottom:25px;">
+                        <div onclick="renderDashboard('overview')" style="padding:12px 20px; background:${tab==='overview'?'#1e293b':'#f1f5f9'}; color:${tab==='overview'?'white':'#64748b'}; border-radius:15px; font-weight:800; cursor:pointer;">Overview</div>
+                        <div onclick="renderDashboard('management')" style="padding:12px 20px; background:${tab==='management'?'#1e293b':'#f1f5f9'}; color:${tab==='management'?'white':'#64748b'}; border-radius:15px; font-weight:800; cursor:pointer;">Users</div>
+                    </div>
+                    ${content}
+                </div>
+            `;
+        };
+
+        const removeUser = (email) => {
+            Swal.fire({ title: 'Delete User?', text: 'Account will be permanently removed.', icon: 'warning', showCancelButton: true }).then(res => {
+                if(res.isConfirmed) {
+                    USERS = USERS.filter(u => u.email !== email);
+                    storage.setItem(USERS_KEY, JSON.stringify(USERS));
+                    renderDashboard('management');
+                    Swal.fire('Deleted', 'User removed', 'success');
+                }
+            });
+        };
+
+        const logout = () => {
+            storage.removeItem('user_role');
+            location.reload();
+        };
+
+        // Check persistent session
+        if(storage.getItem('is_logged_in') === 'true' && (storage.getItem('user_role') === 'admin' || storage.getItem('user_role') === 'superadmin')) {
+            renderDashboard();
+        }
+    </script>
+</body>
+</html>
