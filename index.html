@@ -501,21 +501,28 @@
             document.getElementById('auth-view').style.display = 'none';
             document.getElementById('app-view').style.display = 'flex';
             
-            const uName = storage.getItem('ax_name');
+            const role = store.getItem('ax_role');
+            const uName = store.getItem('ax_name');
+            
             document.getElementById('u-name').innerText = uName;
-            document.getElementById('u-initial').innerText = uName.charAt(0);
-            document.getElementById('lvl-badge').innerText = role;
+            document.getElementById('u-initial').innerText = uName ? uName.charAt(0) : 'U';
+            document.getElementById('lvl-badge').innerText = role ? role.toUpperCase() : 'CLEARANCE';
 
             const nav = document.getElementById('side-nav');
-            nav.innerHTML = NAV_SCHEMA.map(n => {
-                if(!n.roles.includes(role)) return '';
-                return `<div id="nav-${n.id}" class="nav-i ${n.id==='dash'?'active':''}" onclick="switchTab('${n.id}', this)"><i class="fa-solid ${n.icon}"></i> ${n.label}</div>`;
-            }).join('');
-
+            if(nav && role) {
+                nav.innerHTML = NAV_SCHEMA.map(n => {
+                    if(!n.roles.includes(role)) return '';
+                    return `<div id="nav-${n.id}" class="nav-i ${n.id==='dash'?'active':''}" onclick="switchTab('${n.id}', this)"><i class="fa-solid ${n.icon}"></i> ${n.label}</div>`;
+                }).join('');
+            }
+            
             // Global Search Listener
-            document.querySelector('.search-container input').addEventListener('keyup', (e) => {
-                if(e.key === 'Enter') handleGlobalSearch(e.target.value);
-            });
+            const sInp = document.querySelector('.search-container input');
+            if(sInp) {
+                sInp.addEventListener('keyup', (e) => {
+                    if(e.key === 'Enter') handleGlobalSearch(e.target.value);
+                });
+            }
 
             switchTab('dash');
 
