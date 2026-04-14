@@ -243,7 +243,7 @@
                     <div class="c-hdr"><h3><i class="fa-solid fa-users"></i> Member Registry</h3><button class="btn btn-p" style="padding:10px 15px;">Export Data</button></div>
                     <div class="tbl-w">
                         <table class="tbl">
-                            <thead><tr><th>Full Name</th><th>Identity</th><th>Clearance</th><th>Status</th><th>Registration</th></tr></thead>
+                            <thead><tr><th>Full Name</th><th>Identity</th><th>Clearance</th><th>Status</th><th>Security Override</th></tr></thead>
                             <tbody>
                                 ${STATE.users.map(u=>`
                                     <tr>
@@ -251,7 +251,7 @@
                                         <td style="color:var(--sub)">${u.email}</td>
                                         <td><span class="bdg ${u.role==='user'?'bdg-s':'bdg-p'}">${u.role}</span></td>
                                         <td><div style="display:flex; align-items:center; gap:8px;"><div style="width:8px; height:8px; background:var(--acc); border-radius:50%;"></div> Active</div></td>
-                                        <td style="color:var(--sub)">14 April 2026</td>
+                                        <td><button onclick="resetUserPassword('${u.email}')" class="btn" style="background:var(--s); color:white; padding:8px 12px; font-size:10px;"><i class="fa-solid fa-key"></i> Reset Pass</button></td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -396,6 +396,28 @@
             switchTab('dash');
         };
 
+        const resetUserPassword = (email) => {
+            if(STATE.role !== 'superadmin') return Swal.fire('Denied', 'Only Super Authority can override security.', 'error');
+            
+            Swal.fire({
+                title: 'Security Override',
+                text: `Set new passcode for: ${email}`,
+                input: 'password',
+                inputPlaceholder: 'New Encrypted Passcode',
+                showCancelButton: true,
+                confirmButtonText: 'Commit Change'
+            }).then(res => {
+                if(res.isConfirmed && res.value) {
+                    const idx = STATE.users.findIndex(u => u.email === email);
+                    if(idx !== -1) {
+                        STATE.users[idx].pass = res.value;
+                        store.setItem('app_users_db', JSON.stringify(STATE.users));
+                        Swal.fire('Identity Updated', 'Passcode has been globally overridden.', 'success');
+                        switchTab('users');
+                    }
+                }
+            });
+        };
         const renderFinancials = (area) => {
              area.innerHTML = `
                 <div class="view-pane">
@@ -591,4 +613,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
