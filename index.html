@@ -3,66 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Authority Portal - StudentNest</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Authority Hub - StudentNest Executive</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --subtext: #64748b; --border: #f1f5f9; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); }
-        .auth-container { height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: white; width: 100%; max-width: 400px; padding: 40px 30px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
-        .input-group input { width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 14px; font-weight: 700; box-sizing: border-box; outline: none; transition: 0.3s; }
-        .input-group input:focus { border-color: #1e293b; background: white; }
-        .btn-full { padding: 18px; background: #1e293b; color: white; font-weight: 900; width: 100%; border-radius: 18px; border: none; cursor: pointer; transition: 0.3s; font-size: 16px; }
-        .btn-full:active { transform: scale(0.98); }
-        .section { padding: 25px; max-width: 800px; margin: 0 auto; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        :root { 
+            --primary: #1e293b; --accent: #6366f1; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+            --bg: #f1f5f9; --sidebar: #ffffff; --card: #ffffff; --text: #1e293b; --subtext: #64748b;
+        }
+        * { box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); overflow: hidden; }
+        
+        .layout { display: flex; height: 100vh; }
+        
+        /* SIDEBAR */
+        .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: 0.3s; }
+        .sidebar-header { padding: 30px; text-align: center; }
+        .logo-box { width: 50px; height: 50px; background: var(--primary); border-radius: 15px; margin: 0 auto 15px; display: flex; align-items:center; justify-content:center; color:white; font-size:24px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .nav-links { flex: 1; padding: 0 15px; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 14px 20px; border-radius: 14px; margin-bottom: 5px; color: var(--subtext); cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 14px; }
+        .nav-item i { width: 25px; font-size: 18px; margin-right: 12px; }
+        .nav-item:hover { background: #f8fafc; color: var(--primary); }
+        .nav-item.active { background: #f1f5f9; color: var(--accent); }
+        
+        /* CONTENT */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { height: 80px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; }
+        .content-area { flex: 1; padding: 40px; overflow-y: auto; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .stat-card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .stat-card h3 { margin: 0; color: var(--subtext); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card .val { font-size: 32px; font-weight: 800; margin: 10px 0; }
+        .stat-card .trend { font-size: 12px; font-weight: 700; color: var(--success); }
+        
+        .data-card { background: white; border-radius:24px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .card-header { padding: 20px 30px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h2 { font-size: 18px; font-weight: 800; margin: 0; }
+        
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { text-align: left; padding: 15px 30px; background: #f8fafc; color: var(--subtext); font-size: 12px; text-transform: uppercase; font-weight: 800; }
+        .table td { padding: 15px 30px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 600; }
+        
+        .badge { padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: 800; }
+        .badge-success { background: #ecfdf5; color: #10b981; }
+        .badge-warning { background: #fffbeb; color: #f59e0b; }
+        .badge-danger { background: #fef2f2; color: #ef4444; }
+        
+        .btn-circle { width: 35px; height: 35px; border-radius: 10px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .view-pane { animation: slideIn 0.4s ease-out; }
+
+        /* AUTH SCREEN */
+        .auth-container { height: 100vh; display: flex; align-items: center; justify-content: center; background: #f8fafc; }
+        .auth-card { background: white; width: 420px; padding: 50px; border-radius: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.08); text-align: center; }
     </style>
 </head>
 <body>
+
     <div id="auth-view" class="auth-container">
         <div class="auth-card">
-            <div style="position:absolute; top:-60px; right:-60px; width:150px; height:150px; background:rgba(30,41,59,0.08); border-radius:50%;"></div>
-            <div style="position:relative; z-index:2;">
-                <div style="text-align:center; margin-bottom:40px;">
-                    <div style="width:75px; height:75px; background:linear-gradient(135deg, #1e293b, #0f172a); border-radius:22px; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; box-shadow:0 15px 30px rgba(0,0,0,0.3);">
-                        <i class="fa-solid fa-shield-halved" style="color:white; font-size:32px;"></i>
-                    </div>
-                    <h2 style="font-weight:900; font-size:28px; color:#1e293b; letter-spacing:-1px;">Authority Portal</h2>
-                    <p style="color:#64748b; font-size:14px; font-weight:500;">Authorized Personnel Only.</p>
-                </div>
-                <div class="input-group" style="margin-bottom:20px;">
-                    <input id="admin-email" type="email" placeholder="Admin Email" value="">
-                </div>
-                <div class="input-group" style="margin-bottom:30px;">
-                    <input id="admin-pass" type="password" placeholder="Passcode" value="">
-                </div>
-                <button class="btn-full" onclick="handleAdminLogin()">Authenticate</button>
-                
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
-                    <button onclick="quickFill('admin')" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:#1e293b; cursor:pointer;">Demo Admin</button>
-                    <button onclick="quickFill('super')" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:#1e293b; cursor:pointer;">Demo Super</button>
-                </div>
-
-                <div style="text-align:center; margin-top:25px;">
-                    <a href="index.html" style="color:#6366f1; font-weight:800; font-size:12px; text-decoration:none;">Back to Student App</a>
-                </div>
+            <div class="logo-box"><i class="fa-solid fa-shield-halved"></i></div>
+            <h1 style="font-weight:900; margin:0; font-size:28px;">Master Console</h1>
+            <p style="color:var(--subtext); margin-top:5px; font-weight:500;">Executive Authority Access Only</p>
+            <div style="margin-top:40px; text-align:left;">
+                <label style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--subtext); margin-left:5px;">Authority Identity</label>
+                <input id="admin-email" type="email" placeholder="admin@test.com" style="width:100%; padding:18px; border-radius:15px; border:2px solid #f1f5f9; background:#f8fafc; margin:8px 0 25px; outline:none; font-weight:700;">
+                <label style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--subtext); margin-left:5px;">Secure Passcode</label>
+                <input id="admin-pass" type="password" placeholder="••••••••" style="width:100%; padding:18px; border-radius:15px; border:2px solid #f1f5f9; background:#f8fafc; margin:8px 0 35px; outline:none; font-weight:700;">
+                <button onclick="handleLogin()" style="width:100%; padding:20px; background:var(--primary); color:white; border-radius:18px; border:none; font-weight:900; font-size:16px; cursor:pointer;">Verify Authority</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+                <button onclick="quickFill('admin')" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:var(--primary); cursor:pointer;">Demo Admin</button>
+                <button onclick="quickFill('super')" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:var(--primary); cursor:pointer;">Demo Super</button>
             </div>
         </div>
     </div>
 
-    <div id="dashboard-view" style="display:none;"></div>
+    <div id="app-view" class="layout" style="display:none;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-box" style="margin-bottom:10px;"><i class="fa-solid fa-bolt"></i></div>
+                <h2 style="font-weight:900; font-size:18px; margin:0;">StudentNest</h2>
+                <p id="admin-role-badge" style="font-size:10px; font-weight:900; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; margin-top:5px;">Authority</p>
+            </div>
+            <nav class="nav-links">
+                <div class="nav-item active" onclick="switchTab('overview')"><i class="fa-solid fa-chart-line"></i> Dashboard</div>
+                <div class="nav-item" onclick="switchTab('users')"><i class="fa-solid fa-users"></i> User Base</div>
+                <div class="nav-item" onclick="switchTab('products')"><i class="fa-solid fa-boxes-stacked"></i> Marketplace</div>
+                <div class="nav-item" onclick="switchTab('orders')"><i class="fa-solid fa-receipt"></i> Transactions</div>
+                <div class="nav-item" onclick="switchTab('subscriptions')"><i class="fa-solid fa-crown"></i> Subscriptions</div>
+                <div class="nav-item" onclick="switchTab('support')"><i class="fa-solid fa-headset"></i> Support Desk</div>
+                <div class="nav-item" onclick="switchTab('settings')"><i class="fa-solid fa-vials"></i> System Health</div>
+            </nav>
+            <div style="padding:20px; border-top:1px solid #f1f5f9;">
+                <div class="nav-item" style="color:var(--danger);" onclick="logout()"><i class="fa-solid fa-power-off"></i> Terminate Session</div>
+            </div>
+        </aside>
+        
+        <main class="main">
+            <header class="header">
+                <div style="font-weight:800; font-size:20px;" id="current-view-title">Dashboard Overview</div>
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <div style="position:relative; cursor:pointer;"><i class="fa-solid fa-bell" style="font-size:20px; color:var(--subtext);"></i><span style="position:absolute; top:-5px; right:-5px; width:15px; height:15px; background:var(--danger); border-radius:50%; border:2px solid white;"></span></div>
+                    <div style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:8px 15px; border-radius:12px;">
+                        <div id="admin-initial" style="width:30px; height:30px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:14px;">A</div>
+                        <span id="admin-name-display" style="font-weight:700; font-size:14px;">Administrator</span>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="content-area" id="main-content">
+                <!-- VIEW LOADS HERE -->
+            </div>
+        </main>
+    </div>
 
     <script>
-        const USERS_KEY = 'app_users_db';
         const storage = localStorage;
-
+        const USERS_KEY = 'app_users_db';
+        const PRODUCTS_KEY = 'app_products';
+        const SUPPORT_KEY = 'app_support_tickets';
+        
         let USERS = JSON.parse(storage.getItem(USERS_KEY)) || [];
-        // Force Add Admins if missing
-        if(!USERS.find(u => u.role === 'admin')) USERS.push({ name: 'System Admin', email: 'admin@test.com', pass: 'admin123', role: 'admin' });
-        if(!USERS.find(u => u.role === 'superadmin')) USERS.push({ name: 'Super Authority', email: 'super@test.com', pass: 'super786', role: 'superadmin' });
+        // Ensure Admin Exists
+        if(!USERS.find(u=>u.role==='admin')) USERS.push({name:'Official Admin', email:'admin@test.com', pass:'admin123', role:'admin'});
+        if(!USERS.find(u=>u.role==='superadmin')) USERS.push({name:'Master Controller', email:'super@test.com', pass:'super786', role:'superadmin'});
         storage.setItem(USERS_KEY, JSON.stringify(USERS));
 
         const quickFill = (type) => {
@@ -73,97 +142,158 @@
                 document.getElementById('admin-email').value = 'super@test.com';
                 document.getElementById('admin-pass').value = 'super786';
             }
-            handleAdminLogin();
-        };
+            handleLogin();
+        }
 
-        const handleAdminLogin = () => {
+        const handleLogin = () => {
             const email = document.getElementById('admin-email').value.trim();
             const pass = document.getElementById('admin-pass').value.trim();
             const user = USERS.find(u => u.email === email && u.pass === pass && (u.role === 'admin' || u.role === 'superadmin'));
             
             if(user) {
-                storage.setItem('is_logged_in', 'true');
-                storage.setItem('user_role', user.role);
-                storage.setItem('user_name', user.name);
-                renderDashboard();
+                storage.setItem('admin_is_logged', 'true');
+                storage.setItem('admin_role', user.role);
+                storage.setItem('admin_name', user.name);
+                showApp();
             } else {
-                Swal.fire('Access Denied', 'Invalid Admin Credentials', 'error');
+                Swal.fire('Access Denied', 'Identity Verification Failed', 'error');
             }
         };
 
-        const renderDashboard = (tab = 'overview') => {
+        const showApp = () => {
             document.getElementById('auth-view').style.display = 'none';
-            const dv = document.getElementById('dashboard-view');
-            dv.style.display = 'block';
+            document.getElementById('app-view').style.display = 'flex';
+            document.getElementById('admin-name-display').innerText = storage.getItem('admin_name');
+            document.getElementById('admin-initial').innerText = storage.getItem('admin_name').charAt(0);
+            document.getElementById('admin-role-badge').innerText = storage.getItem('admin_role');
+            switchTab('overview');
+        };
+
+        const switchTab = (tab) => {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const target = Array.from(document.querySelectorAll('.nav-item')).find(el => el.innerText.toLowerCase().includes(tab));
+            if(target) target.classList.add('active');
             
-            const role = storage.getItem('user_role');
-            const PRODUCTS = JSON.parse(storage.getItem('app_products')) || [];
+            const area = document.getElementById('main-content');
+            document.getElementById('current-view-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1);
+            
+            if(tab === 'overview') renderOverview(area);
+            if(tab === 'users') renderUsers(area);
+            if(tab === 'products') renderProducts(area);
+            if(tab === 'support') renderSupport(area);
+            if(tab === 'subscriptions') renderSubs(area);
+        };
 
-            let content = '';
-            if(tab === 'overview') {
-                content = `
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:25px;">
-                        <div style="background:linear-gradient(135deg, #10b981, #059669); padding:20px; border-radius:24px; color:white;">
-                            <small>TOTAL USERS</small>
-                            <h2 style="margin:0;">${USERS.length}</h2>
-                        </div>
-                        <div style="background:linear-gradient(135deg, #6366f1, #4f46e5); padding:20px; border-radius:24px; color:white;">
-                            <small>ACTIVE DEALS</small>
-                            <h2 style="margin:0;">${PRODUCTS.length}</h2>
+        const renderOverview = (area) => {
+            const products = JSON.parse(storage.getItem(PRODUCTS_KEY)) || [];
+            const tickets = JSON.parse(storage.getItem(SUPPORT_KEY)) || [];
+            area.innerHTML = `
+                <div class="view-pane">
+                    <div class="stat-grid">
+                        <div class="stat-card"><h3>Total Revenue</h3><div class="val">₹24,850</div><div class="trend"><i class="fa-solid fa-arrow-up"></i> 12% Month</div></div>
+                        <div class="stat-card"><h3>Member Units</h3><div class="val">${USERS.length}</div><div class="trend"><i class="fa-solid fa-arrow-up"></i> 4% Week</div></div>
+                        <div class="stat-card"><h3>Listing Volume</h3><div class="val">${products.length}</div><div class="trend" style="color:var(--warning)">Stable</div></div>
+                        <div class="stat-card"><h3>Active Tickets</h3><div class="val">${tickets.length}</div><div class="trend" style="color:var(--danger)">Urgent Req</div></div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:25px;">
+                        <div class="data-card"><div class="card-header"><h2>Market Health</h2></div><div style="padding:20px;"><canvas id="healthChart"></canvas></div></div>
+                        <div class="data-card" style="padding:25px;">
+                            <h2 style="margin-bottom:20px;">Authority Actions</h2>
+                            <button onclick="broadcast()" style="width:100%; padding:15px; background:var(--accent); color:white; border-radius:12px; border:none; font-weight:700; cursor:pointer; margin-bottom:10px;">Send Broadcast Email</button>
+                            <button onclick="Swal.fire('Generating...','Security Audit in Progress','info')" style="width:100%; padding:15px; background:var(--primary); color:white; border-radius:12px; border:none; font-weight:700; cursor:pointer;">Generate System Audit</button>
                         </div>
                     </div>
-                `;
-            } else if(tab === 'management') {
-                content = `
-                    <div style="display:flex; flex-direction:column; gap:15px;">
-                        ${USERS.map(u => `
-                            <div style="background:white; padding:15px; border-radius:18px; border:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; animation:fadeIn 0.3s ease;">
-                                <div><b style="color:#1e293b;">${u.name}</b><br><small style="color:#64748b;">${u.email} (${u.role})</small></div>
-                                ${role === 'superadmin' && u.role !== 'superadmin' ? `<button onclick="removeUser('${u.email}')" style="background:#fef2f2; border:none; color:#ef4444; padding:10px; border-radius:10px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
+                </div>
+            `;
+            const ctx = document.getElementById('healthChart').getContext('2d');
+            new Chart(ctx, { type: 'line', data: { labels: ['Jan','Feb','Mar','Apr','May','Jun'], datasets: [{label: 'App Growth', data: [12, 19, 15, 25, 22, 30], borderColor: '#6366f1', fill:true, tension: 0.4}] } });
+        };
 
-            dv.innerHTML = `
-                <div class="section" style="animation:fadeIn 0.5s ease;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-                        <div>
-                            <h1 style="font-weight:900; margin:0;">${role === 'superadmin' ? 'Super Authority' : 'Admin Panel'}</h1>
-                            <p style="color:#64748b; margin:5px 0 0;">Management Dashboard</p>
-                        </div>
-                        <button onclick="logout()" style="background:#fef2f2; border:none; color:#ef4444; padding:12px; border-radius:15px; cursor:pointer;"><i class="fa-solid fa-power-off"></i></button>
-                    </div>
-                    <div style="display:flex; gap:10px; margin-bottom:25px;">
-                        <div onclick="renderDashboard('overview')" style="padding:12px 20px; background:${tab==='overview'?'#1e293b':'#f1f5f9'}; color:${tab==='overview'?'white':'#64748b'}; border-radius:15px; font-weight:800; cursor:pointer;">Overview</div>
-                        <div onclick="renderDashboard('management')" style="padding:12px 20px; background:${tab==='management'?'#1e293b':'#f1f5f9'}; color:${tab==='management'?'white':'#64748b'}; border-radius:15px; font-weight:800; cursor:pointer;">Users</div>
-                    </div>
-                    ${content}
+        const renderUsers = (area) => {
+            const role = storage.getItem('admin_role');
+            area.innerHTML = `
+                <div class="view-pane data-card">
+                    <div class="card-header"><h2>Registered Base</h2><button class="badge" style="background:var(--accent); color:white; border:none; cursor:pointer;">Export CSV</button></div>
+                    <table class="table">
+                        <thead><tr><th>Name</th><th>Identity</th><th>Clearance</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            ${USERS.map((u,i)=>`
+                                <tr>
+                                    <td>${u.name}</td>
+                                    <td style="color:var(--subtext)">${u.email}</td>
+                                    <td><span class="badge ${u.role==='admin'?'badge-warning':'badge-success'}">${u.role||'user'}</span></td>
+                                    <td>
+                                        <button class="btn-circle" style="background:#f1f5f9;"><i class="fa-solid fa-eye"></i></button>
+                                        ${role==='superadmin' && u.role!=='superadmin' ? `<button onclick="deleteUser('${u.email}')" class="btn-circle" style="background:#fef2f2; color:var(--danger); margin-left:5px;"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
                 </div>
             `;
         };
 
-        const removeUser = (email) => {
-            Swal.fire({ title: 'Delete User?', text: 'Account will be permanently removed.', icon: 'warning', showCancelButton: true }).then(res => {
-                if(res.isConfirmed) {
-                    USERS = USERS.filter(u => u.email !== email);
-                    storage.setItem(USERS_KEY, JSON.stringify(USERS));
-                    renderDashboard('management');
-                    Swal.fire('Deleted', 'User removed', 'success');
-                }
-            });
+        const renderSupport = (area) => {
+            const tickets = JSON.parse(storage.getItem(SUPPORT_KEY)) || [];
+            area.innerHTML = `
+                <div class="view-pane">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+                        ${tickets.length === 0 ? '<p style="grid-column:1/-1; text-align:center; padding:50px; color:var(--subtext);">No Pending Inquiries</p>' : tickets.map((t,i)=>`
+                             <div class="stat-card" style="border:1px solid #f1f5f9;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                                    <span class="badge ${t.type.includes('Chat')?'badge-success':'badge-danger'}">${t.type}</span>
+                                    <small style="color:var(--subtext); font-weight:800;">${t.time}</small>
+                                </div>
+                                <b style="display:block; margin-bottom:5px;">Contact: ${t.user}</b>
+                                <p style="font-size:13px; color:var(--subtext); margin-bottom:20px;">${t.detail}</p>
+                                <div style="display:flex; gap:10px;">
+                                    <button onclick="resolveTicket(${i})" style="flex:1; padding:10px; border-radius:10px; border:none; background:var(--primary); color:white; font-weight:800; cursor:pointer;">Initiate Response</button>
+                                    <button onclick="delTicket(${i})" style="padding:10px; border-radius:10px; border:none; background:var(--danger); color:white; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                             </div>
+                        `).reverse().join('')}
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderSubs = (area) => {
+            area.innerHTML = `
+                <div class="view-pane data-card">
+                    <div class="card-header"><h2>Premium Subscriptions</h2></div>
+                    <table class="table">
+                        <thead><tr><th>Student</th><th>Tier</th><th>Expiration</th><th>Revenue</th></tr></thead>
+                        <tbody>
+                            <tr><td>Rahul Kumar</td><td><span class="badge badge-success">Gold Plan</span></td><td>15 May 24</td><td>₹4,999</td></tr>
+                            <tr><td>Sneha Singh</td><td><span class="badge badge-warning">Silver Plan</span></td><td>02 May 24</td><td>₹2,499</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        };
+
+        const broadcast = () => {
+            Swal.fire({
+                title: 'Broadcast Message',
+                input: 'textarea',
+                inputPlaceholder: 'Enter message for all users...',
+                showCancelButton: true
+            }).then(r => { if(r.isConfirmed) Swal.fire('Queued','Message will be dispatched to ${USERS.length} students','success'); });
+        }
+
+        const deleteUser = (email) => {
+            USERS = USERS.filter(u=>u.email!==email);
+            storage.setItem(USERS_KEY, JSON.stringify(USERS));
+            switchTab('users');
         };
 
         const logout = () => {
-            storage.removeItem('user_role');
+            storage.removeItem('admin_is_logged');
             location.reload();
-        };
-
-        // Check persistent session
-        if(storage.getItem('is_logged_in') === 'true' && (storage.getItem('user_role') === 'admin' || storage.getItem('user_role') === 'superadmin')) {
-            renderDashboard();
         }
+
+        if(storage.getItem('admin_is_logged') === 'true') showApp();
     </script>
 </body>
 </html>
