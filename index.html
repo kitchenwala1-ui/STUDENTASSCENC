@@ -3,241 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Authority Hub - StudentNest Executive</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Authority Hub - StudentNest Multi-Tier CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
-            --primary: #1e293b; --accent: #6366f1; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
-            --bg: #f1f5f9; --sidebar: #ffffff; --card: #ffffff; --text: #1e293b; --subtext: #64748b;
+            --p: #6366f1; --p-dark: #4f46e5; --s: #1e293b; --acc: #10b981; --wrn: #f59e0b; --err: #ef4444;
+            --bg: #f8fafc; --side: #ffffff; --card: #ffffff; --txt: #1e293b; --sub: #64748b; --border: #f1f5f9;
         }
-        * { box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { margin: 0; background: var(--bg); color: var(--text); overflow: hidden; }
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; transition: all 0.2s ease; }
+        body { margin: 0; background: var(--bg); color: var(--txt); overflow: hidden; height: 100vh; }
         
-        .layout { display: flex; height: 100vh; }
-        
-        /* SIDEBAR */
-        .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: 0.3s; }
-        .sidebar-header { padding: 30px; text-align: center; }
-        .logo-box { width: 50px; height: 50px; background: var(--primary); border-radius: 15px; margin: 0 auto 15px; display: flex; align-items:center; justify-content:center; color:white; font-size:24px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .nav-links { flex: 1; padding: 0 15px; overflow-y: auto; }
-        .nav-item { display: flex; align-items: center; padding: 14px 20px; border-radius: 14px; margin-bottom: 5px; color: var(--subtext); cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 14px; }
-        .nav-item i { width: 25px; font-size: 18px; margin-right: 12px; }
-        .nav-item:hover { background: #f8fafc; color: var(--primary); }
-        .nav-item.active { background: #f1f5f9; color: var(--accent); }
-        
-        /* CONTENT */
-        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .header { height: 80px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; }
-        .content-area { flex: 1; padding: 40px; overflow-y: auto; }
-        
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-bottom: 40px; }
-        .stat-card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .stat-card h3 { margin: 0; color: var(--subtext); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-card .val { font-size: 32px; font-weight: 800; margin: 10px 0; }
-        .stat-card .trend { font-size: 12px; font-weight: 700; color: var(--success); }
-        
-        .data-card { background: white; border-radius:24px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .card-header { padding: 20px 30px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-        .card-header h2 { font-size: 18px; font-weight: 800; margin: 0; }
-        
-        .table { width: 100%; border-collapse: collapse; }
-        .table th { text-align: left; padding: 15px 30px; background: #f8fafc; color: var(--subtext); font-size: 12px; text-transform: uppercase; font-weight: 800; }
-        .table td { padding: 15px 30px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 600; }
-        
-        .badge { padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: 800; }
-        .badge-success { background: #ecfdf5; color: #10b981; }
-        .badge-warning { background: #fffbeb; color: #f59e0b; }
-        .badge-danger { background: #fef2f2; color: #ef4444; }
-        
-        .btn-circle { width: 35px; height: 35px; border-radius: 10px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; }
-        
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        .view-pane { animation: slideIn 0.4s ease-out; }
+        /* LAYOUT CORE */
+        .app { display: flex; height: 100vh; }
+        .sidebar { width: 280px; background: var(--side); border-right: 1.5px solid var(--border); display: flex; flex-direction: column; z-index: 10; }
+        .main { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .hdr { height: 80px; background: white; border-bottom: 1.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; }
+        .view-content { flex: 1; padding: 30px 40px; overflow-y: auto; }
 
-        /* AUTH SCREEN */
-        .auth-container { height: 100vh; display: flex; align-items: center; justify-content: center; background: #f8fafc; }
-        .auth-card { background: white; width: 420px; padding: 50px; border-radius: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.08); text-align: center; }
+        /* SIDEVBAR BRANDING */
+        .brand { padding: 30px; text-align: center; }
+        .brand-logo { width: 45px; height: 45px; background: var(--p); border-radius: 12px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; box-shadow: 0 10px 15px -3px rgba(99,102,241,0.3); }
+        .brand-name { font-weight: 850; font-size: 16px; letter-spacing: -0.5px; }
+
+        /* NAV STYLES */
+        .nav-g { flex: 1; padding: 0 20px; overflow-y: auto; }
+        .nav-i { display: flex; align-items: center; padding: 12px 18px; border-radius: 12px; margin-bottom: 4px; color: var(--sub); cursor: pointer; font-weight: 700; font-size: 13.5px; }
+        .nav-i i { width: 30px; font-size: 18px; opacity: 0.7; }
+        .nav-i:hover { background: #f1f5f9; color: var(--p); }
+        .nav-i.active { background: #eef2ff; color: var(--p); }
+        .nav-i.active i { color: var(--p); opacity: 1; }
+
+        /* DASHBOARD COMPONENTS */
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .c-stat { background: white; padding: 25px; border-radius: 20px; border: 1.5px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02); position: relative; }
+        .c-stat h4 { margin: 0; color: var(--sub); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
+        .c-stat .v { font-size: 32px; font-weight: 900; margin: 5px 0; color: var(--p); }
+        .c-stat .trend { font-size: 12px; font-weight: 700; color: var(--acc); }
+
+        .c-data { background: white; border-radius: 24px; border: 1.5px solid var(--border); overflow: hidden; }
+        .c-hdr { padding: 20px 30px; border-bottom: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .c-hdr h3 { font-size: 16px; font-weight: 850; margin: 0; display:flex; align-items:center; gap:10px; }
+
+        /* TABLE UI */
+        .tbl-w { overflow-x: auto; }
+        .tbl { width: 100%; border-collapse: collapse; }
+        .tbl th { text-align: left; padding: 15px 30px; background: #f8fafc; color: var(--sub); font-size: 10.5px; text-transform: uppercase; font-weight: 850; letter-spacing: 1px; }
+        .tbl td { padding: 18px 30px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--txt); }
+        
+        /* REUSABLE UI */
+        .bdg { padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .bdg-p { background: #eff6ff; color: #1e61cc; }
+        .bdg-s { background: #f0fdf4; color: #166534; }
+        .bdg-e { background: #fef2f2; color: #991b1b; }
+        
+        .btn { padding: 12px 24px; border-radius: 14px; border: none; font-weight: 850; cursor: pointer; font-size: 13px; display: inline-flex; align-items:center; gap:8px; }
+        .btn-p { background: var(--p); color: white; box-shadow: 0 4px 14px 0 rgba(99,102,241,0.39); }
+        .btn-p:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.23); }
+        .btn-s { background: var(--s); color: white; }
+
+        input, select, textarea { width: 100%; padding: 15px; border-radius: 14px; border: 1.5px solid var(--border); background: #f8fafc; font-weight: 700; font-size: 14px; }
+        input:focus { border-color: var(--p); background: white; }
+
+        /* ANIMATIONS */
+        @keyframes flowIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .view-pane { animation: flowIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        /* SEARCH BAR */
+        .search-container { position: relative; width: 400px; }
+        .search-container i { position: absolute; left: 15px; top: 12px; color: var(--sub); }
+        .search-container input { padding-left: 45px; height: 45px; border-radius: 12px; }
+
+        /* AUTH UI */
+        .auth-sec { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at top right, #eef2ff, #f8fafc); }
+        .auth-card { background: white; width: 420px; padding: 50px; border-radius: 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.05); text-align: center; border: 1.5px solid var(--border); }
+        .auth-card .logo { width: 60px; height: 60px; background: var(--p); border-radius: 20px; color: white; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:24px; box-shadow: 0 10px 30px rgba(99,102,241,0.3); }
     </style>
 </head>
 <body>
 
-    <div id="auth-view" class="auth-container">
+    <!-- AUTHENTICATION LAYER -->
+    <div id="auth-view" class="auth-sec">
         <div class="auth-card">
-            <div class="logo-box"><i class="fa-solid fa-shield-halved"></i></div>
-            <h1 style="font-weight:900; margin:0; font-size:28px;">Master Console</h1>
-            <p style="color:var(--subtext); margin-top:5px; font-weight:500;">Executive Authority Access Only</p>
-            <div style="margin-top:40px; text-align:left;">
-                <label style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--subtext); margin-left:5px;">Authority Identity</label>
-                <input id="admin-email" type="email" placeholder="admin@test.com" style="width:100%; padding:18px; border-radius:15px; border:2px solid #f1f5f9; background:#f8fafc; margin:8px 0 25px; outline:none; font-weight:700;">
-                <label style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--subtext); margin-left:5px;">Secure Passcode</label>
-                <input id="admin-pass" type="password" placeholder="••••••••" style="width:100%; padding:18px; border-radius:15px; border:2px solid #f1f5f9; background:#f8fafc; margin:8px 0 35px; outline:none; font-weight:700;">
-                <button onclick="handleLogin()" style="width:100%; padding:20px; background:var(--primary); color:white; border-radius:18px; border:none; font-weight:900; font-size:16px; cursor:pointer;">Verify Authority</button>
+            <div class="logo"><i class="fa-solid fa-fire-glow"></i></div>
+            <h1 style="font-weight:900; font-size:28px; margin:0; letter-spacing:-1px;">Authority Terminal</h1>
+            <p style="color:var(--sub); margin:5px 0 40px; font-weight:600;">StudentNest Enterprise Console</p>
+            <div style="text-align:left;">
+                <label style="font-size:11px; font-weight:900; color:var(--sub); text-transform:uppercase; margin-left:10px;">Security Identity</label>
+                <input id="ax-mail" placeholder="Enter Identity (Email)" style="margin:8px 0 20px;">
+                <label style="font-size:11px; font-weight:900; color:var(--sub); text-transform:uppercase; margin-left:10px;">Encrypted Passcode</label>
+                <input id="ax-pass" type="password" placeholder="••••••••" style="margin:8px 0 35px;">
+                <button onclick="coreLogin()" class="btn btn-p" style="width:100%; height:60px; justify-content:center; font-size:16px;">Verify Permissions</button>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
-                <button onclick="quickFill('admin')" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:var(--primary); cursor:pointer;">Demo Admin</button>
-                <button onclick="quickFill('super')" style="padding:10px; font-size:10px; background:#f1f5f9; border:none; border-radius:10px; font-weight:800; color:var(--primary); cursor:pointer;">Demo Super</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:25px;">
+                <button onclick="fillAuth('super')" style="background:#f1f5f9; border:none; padding:12px; border-radius:12px; font-weight:800; font-size:10px; cursor:pointer;">Super Authority</button>
+                <button onclick="fillAuth('admin')" style="background:#f1f5f9; border:none; padding:12px; border-radius:12px; font-weight:800; font-size:10px; cursor:pointer;">Service Lead</button>
+                <button onclick="fillAuth('agent')" style="background:#f1f5f9; border:none; padding:12px; border-radius:12px; font-weight:800; font-size:10px; cursor:pointer;">Support Pro</button>
             </div>
         </div>
     </div>
 
-    <div id="app-view" class="layout" style="display:none;">
+    <!-- MAIN APP INTERFACE -->
+    <div id="app-view" class="app" style="display:none;">
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-box" style="margin-bottom:10px;"><i class="fa-solid fa-bolt"></i></div>
-                <h2 style="font-weight:900; font-size:18px; margin:0;">StudentNest</h2>
-                <p id="admin-role-badge" style="font-size:10px; font-weight:900; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; margin-top:5px;">Authority</p>
+            <div class="brand">
+                <div class="brand-logo"><i class="fa-solid fa-shield-bolt"></i></div>
+                <div class="brand-name">Authority Hub</div>
+                <div id="lvl-badge" class="bdg bdg-p" style="margin-top:10px; display:inline-block;"> Clearance </div>
             </div>
-            <nav class="nav-links">
-                <div class="nav-item active" onclick="switchTab('overview')"><i class="fa-solid fa-chart-line"></i> Dashboard</div>
-                <div class="nav-item" onclick="switchTab('users')"><i class="fa-solid fa-users"></i> User Base</div>
-                <div class="nav-item" onclick="switchTab('products')"><i class="fa-solid fa-boxes-stacked"></i> Marketplace</div>
-                <div class="nav-item" onclick="switchTab('orders')"><i class="fa-solid fa-receipt"></i> Transactions</div>
-                <div class="nav-item" onclick="switchTab('subscriptions')"><i class="fa-solid fa-crown"></i> Subscriptions</div>
-                <div class="nav-item" onclick="switchTab('support')"><i class="fa-solid fa-headset"></i> Support Desk</div>
-                <div class="nav-item" onclick="switchTab('settings')"><i class="fa-solid fa-vials"></i> System Health</div>
+            <nav class="nav-g" id="side-nav">
+                <!-- DYNAMICALLY RENDERED -->
             </nav>
-            <div style="padding:20px; border-top:1px solid #f1f5f9;">
-                <div class="nav-item" style="color:var(--danger);" onclick="logout()"><i class="fa-solid fa-power-off"></i> Terminate Session</div>
+            <div style="padding:25px; border-top:1.5px solid var(--border);">
+                <div class="nav-i" style="color:var(--err);" onclick="triggerLogout()"><i class="fa-solid fa-power-off"></i> Terminate Session</div>
             </div>
         </aside>
-        
+
         <main class="main">
-            <header class="header">
-                <div style="font-weight:800; font-size:20px;" id="current-view-title">Dashboard Overview</div>
-                <div style="display:flex; align-items:center; gap:20px;">
-                    <div style="position:relative; cursor:pointer;"><i class="fa-solid fa-bell" style="font-size:20px; color:var(--subtext);"></i><span style="position:absolute; top:-5px; right:-5px; width:15px; height:15px; background:var(--danger); border-radius:50%; border:2px solid white;"></span></div>
-                    <div style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:8px 15px; border-radius:12px;">
-                        <div id="admin-initial" style="width:30px; height:30px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:14px;">A</div>
-                        <span id="admin-name-display" style="font-weight:700; font-size:14px;">Administrator</span>
+            <header class="hdr">
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search users, orders, or support logs...">
+                </div>
+                <div style="display:flex; align-items:center; gap:25px;">
+                    <div style="position:relative; cursor:pointer;" onclick="switchTab('support')">
+                        <i class="fa-solid fa-bell" style="font-size:22px; color:var(--sub);"></i>
+                        <span id="bell-badge" style="position:absolute; top:-8px; right:-8px; background:var(--err); color:white; border-radius:50%; width:20px; height:20px; font-size:11px; display:flex; align-items:center; justify-content:center; font-weight:900; border:2px solid white; display:none;">0</span>
+                    </div>
+                    <div style="width:1.5px; height:30px; background:var(--border);"></div>
+                    <div style="display:flex; align-items:center; gap:15px; background:white; padding:8px 18px; border-radius:14px; border:1.5px solid var(--border); cursor:pointer;">
+                        <div id="u-initial" style="width:34px; height:34px; border-radius:10px; background:var(--p); color:white; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:15px;">U</div>
+                        <div style="text-align:left;">
+                            <b id="u-name" style="display:block; font-size:13px;">Member Name</b>
+                            <span style="font-size:10px; color:var(--sub); font-weight:800;">ACTIVE NOW</span>
+                        </div>
                     </div>
                 </div>
             </header>
-            
-            <div class="content-area" id="main-content">
+            <div class="view-content" id="view-port">
                 <!-- VIEW LOADS HERE -->
             </div>
         </main>
     </div>
 
     <script>
-        const storage = localStorage;
-        const USERS_KEY = 'app_users_db';
-        const PRODUCTS_KEY = 'app_products';
-        const SUPPORT_KEY = 'app_support_tickets';
-        
-        let USERS = JSON.parse(storage.getItem(USERS_KEY)) || [];
-        // Ensure Admin Exists
-        if(!USERS.find(u=>u.role==='admin')) USERS.push({name:'Official Admin', email:'admin@test.com', pass:'admin123', role:'admin'});
-        if(!USERS.find(u=>u.role==='superadmin')) USERS.push({name:'Master Controller', email:'super@test.com', pass:'super786', role:'superadmin'});
-        storage.setItem(USERS_KEY, JSON.stringify(USERS));
+        const store = localStorage;
+        const STATE = {
+            users: JSON.parse(store.getItem('app_users_db')) || [],
+            products: JSON.parse(store.getItem('app_products')) || [],
+            tickets: JSON.parse(store.getItem('app_support_tickets')) || [],
+            orders: JSON.parse(store.getItem('app_orders')) || [],
+            role: store.getItem('ax_role') || '',
+            name: store.getItem('ax_name') || ''
+        };
 
-        const quickFill = (type) => {
-            if(type==='admin') {
-                document.getElementById('admin-email').value = 'admin@test.com';
-                document.getElementById('admin-pass').value = 'admin123';
+        const NAV_SCHEMA = [
+            { id: 'dash', label: 'Overview', icon: 'fa-grid-2', roles: ['superadmin', 'admin', 'agent'] },
+            { id: 'users', label: 'Core Users', icon: 'fa-users', roles: ['superadmin'] },
+            { id: 'market', label: 'Marketplace', icon: 'fa-boxes-stacked', roles: ['superadmin', 'admin'] },
+            { id: 'revenue', label: 'Financials', icon: 'fa-chart-mixed', roles: ['superadmin'] },
+            { id: 'support', label: 'Customer Help', icon: 'fa-headset', roles: ['superadmin', 'admin', 'agent'] },
+            { id: 'team', label: 'Team Control', icon: 'fa-users-gear', roles: ['superadmin', 'admin'] },
+            { id: 'logs', label: 'Security Logs', icon: 'fa-shield-halved', roles: ['superadmin'] }
+        ];
+
+        // SEEDING
+        const defaults = [
+            { name: 'Master Authority', email: 'super@test.com', pass: 'super786', role: 'superadmin' },
+            { name: 'Service Manager', email: 'admin@test.com', pass: 'admin123', role: 'admin' },
+            { name: 'CRM Frontline', email: 'agent@test.com', pass: 'agent456', role: 'agent' }
+        ];
+        defaults.forEach(d => { if(!STATE.users.find(u=>u.email===d.email)) STATE.users.push(d); });
+        store.setItem('app_users_db', JSON.stringify(STATE.users));
+
+        const fillAuth = (type) => {
+            const d = defaults.find(x => x.role.includes(type));
+            document.getElementById('ax-mail').value = d.email;
+            document.getElementById('ax-pass').value = d.pass;
+            coreLogin();
+        };
+
+        const coreLogin = () => {
+            const m = document.getElementById('ax-mail').value.trim();
+            const p = document.getElementById('ax-pass').value.trim();
+            const u = STATE.users.find(x => x.email === m && x.pass === p);
+            
+            if(u && (u.role === 'superadmin' || u.role === 'admin' || u.role === 'agent')) {
+                store.setItem('ax_logged', 'true');
+                store.setItem('ax_role', u.role);
+                store.setItem('ax_name', u.name);
+                location.reload();
             } else {
-                document.getElementById('admin-email').value = 'super@test.com';
-                document.getElementById('admin-pass').value = 'super786';
-            }
-            handleLogin();
-        }
-
-        const handleLogin = () => {
-            const email = document.getElementById('admin-email').value.trim();
-            const pass = document.getElementById('admin-pass').value.trim();
-            const user = USERS.find(u => u.email === email && u.pass === pass && (u.role === 'admin' || u.role === 'superadmin'));
-            
-            if(user) {
-                storage.setItem('admin_is_logged', 'true');
-                storage.setItem('admin_role', user.role);
-                storage.setItem('admin_name', user.name);
-                showApp();
-            } else {
-                Swal.fire('Access Denied', 'Identity Verification Failed', 'error');
+                Swal.fire({ title: 'Access Denied', text: 'You do not have the required clearance.', icon: 'error', border: 'none' });
             }
         };
 
-        const showApp = () => {
-            document.getElementById('auth-view').style.display = 'none';
-            document.getElementById('app-view').style.display = 'flex';
-            document.getElementById('admin-name-display').innerText = storage.getItem('admin_name');
-            document.getElementById('admin-initial').innerText = storage.getItem('admin_name').charAt(0);
-            document.getElementById('admin-role-badge').innerText = storage.getItem('admin_role');
-            switchTab('overview');
+        const switchTab = (id, el) => {
+            if(el) {
+                document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('active'));
+                el.classList.add('active');
+            }
+            const area = document.getElementById('view-port');
+            if(id === 'dash') renderDashboard(area);
+            if(id === 'users') renderUserTable(area);
+            if(id === 'support') renderSupportDesk(area);
+            if(id === 'market') renderMarketplace(area);
+            if(id === 'team') renderTeamRegistry(area);
+            if(id === 'revenue') renderFinancials(area);
         };
 
-        const switchTab = async (tab) => {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const target = Array.from(document.querySelectorAll('.nav-item')).find(el => el.innerText.toLowerCase().includes(tab));
-            if(target) target.classList.add('active');
-            
-            const area = document.getElementById('main-content');
-            document.getElementById('current-view-title').innerText = tab.charAt(0).toUpperCase() + tab.slice(1);
-            
-            if(tab === 'overview') renderOverview(area);
-            if(tab === 'users') renderUsers(area);
-            if(tab === 'products') renderProducts(area);
-            if(tab === 'support') renderSupport(area);
-            if(tab === 'subscriptions') renderSubs(area);
-        };
-
-        const renderOverview = async (area) => {
-            const products = JSON.parse(storage.getItem(PRODUCTS_KEY)) || [];
-            const tickets = JSON.parse(storage.getItem(SUPPORT_KEY)) || [];
+        const renderDashboard = (area) => {
             area.innerHTML = `
                 <div class="view-pane">
-                    <div class="stat-grid">
-                        <div class="stat-card"><h3>Total Revenue</h3><div class="val">₹24,850</div><div class="trend"><i class="fa-solid fa-arrow-up"></i> 12% Month</div></div>
-                        <div class="stat-card"><h3>Member Units</h3><div class="val">${USERS.length}</div><div class="trend"><i class="fa-solid fa-arrow-up"></i> 4% Week</div></div>
-                        <div class="stat-card"><h3>Listing Volume</h3><div class="val">${products.length}</div><div class="trend" style="color:var(--warning)">Stable</div></div>
-                        <div class="stat-card"><h3>Active Tickets</h3><div id="ticket-count-val" class="val">${tickets.length}</div><div class="trend" style="color:var(--danger)">Urgent Req</div></div>
+                    <div class="grid-stats">
+                        <div class="c-stat"><h4>Volume Growth</h4><div class="v">₹${(STATE.users.length * 1200).toLocaleString()}</div><div class="trend"><i class="fa-solid fa-arrow-up"></i> 14.5%</div></div>
+                        <div class="c-stat"><h4>Total Members</h4><div class="v">${STATE.users.length}</div><div class="trend">Live Now</div></div>
+                        <div class="c-stat"><h4>Active Listings</h4><div class="v">${STATE.products.length}</div><div class="trend" style="color:var(--wrn)">Validation Req</div></div>
+                        <div class="c-stat"><h4>Avg Response</h4><div class="v">1.4m</div><div class="trend" style="color:var(--p)">Elite Speed</div></div>
                     </div>
-                    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:25px;">
-                        <div class="data-card"><div class="card-header"><h2>Market Health</h2></div><div style="padding:20px;"><canvas id="healthChart"></canvas></div></div>
-                        <div class="data-card" style="padding:25px;">
-                            <h2 style="margin-bottom:20px;">Authority Actions</h2>
-                            <button onclick="broadcast()" style="width:100%; padding:15px; background:var(--accent); color:white; border-radius:12px; border:none; font-weight:700; cursor:pointer; margin-bottom:10px;">Send Broadcast Email</button>
-                            <button onclick="Swal.fire('Generating...','Security Audit in Progress','info')" style="width:100%; padding:15px; background:var(--primary); color:white; border-radius:12px; border:none; font-weight:700; cursor:pointer;">Generate System Audit</button>
+                    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px;">
+                        <div class="c-data">
+                            <div class="c-hdr"><h3><i class="fa-solid fa-chart-area" style="color:var(--p)"></i> Performance Statistics</h3><select style="width:120px; padding:8px;"><option>Weekly</option></select></div>
+                            <div style="padding:30px;"><canvas id="mainChart" height="200"></canvas></div>
+                        </div>
+                        <div class="c-data" style="background:var(--s); color:white; padding:30px;">
+                            <h3 style="color:white; margin-bottom:20px;"><i class="fa-solid fa-bolt"></i> Rapid Actions</h3>
+                            <button onclick="Swal.fire('Queued','System Audit initiated','info')" style="width:100%; padding:15px; margin-bottom:15px; background:rgba(255,255,255,0.1); border:none; border-radius:12px; color:white; font-weight:800; cursor:pointer;">Initiate Deep Audit</button>
+                            <button onclick="broadcastAlert()" style="width:100%; padding:15px; margin-bottom:15px; background:var(--p); border:none; border-radius:12px; color:white; font-weight:800; cursor:pointer;">Push Global Notice</button>
+                            <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:15px; font-size:12px; font-weight:600;">
+                                <i class="fa-solid fa-circle-info" style="color:var(--p)"></i> Security Patch v2.8.2 is now active on all instances.
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
-            const ctx = document.getElementById('healthChart').getContext('2d');
-            new Chart(ctx, { type: 'line', data: { labels: ['Jan','Feb','Mar','Apr','May','Jun'], datasets: [{label: 'App Growth', data: [12, 19, 15, 25, 22, 30], borderColor: '#6366f1', fill:true, tension: 0.4}] } });
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            new Chart(ctx, { type: 'line', data: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets:[{label:'Engagement', data:[120, 450, 300, 600, 800, 400, 950], borderColor: '#6366f1', fill:true, tension:0.4}] } });
         };
 
-        const renderUsers = (area) => {
-            const role = storage.getItem('admin_role');
+        const renderUserTable = (area) => {
             area.innerHTML = `
-                <div class="view-pane">
-                    ${role === 'superadmin' ? `
-                    <div class="data-card" style="margin-bottom:25px; padding:25px; background:var(--primary); color:white;">
-                        <h2 style="margin-bottom:15px; color:white;">Register New Admin</h2>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-                            <input id="new-adm-name" placeholder="Full Name" style="padding:12px; border-radius:10px; border:none;">
-                            <input id="new-adm-email" placeholder="Admin Email" style="padding:12px; border-radius:10px; border:none;">
-                            <input id="new-adm-pass" placeholder="Passcode" style="padding:12px; border-radius:10px; border:none;">
-                        </div>
-                        <button onclick="createAdmin()" style="margin-top:15px; padding:12px 25px; background:var(--accent); color:white; border-radius:10px; border:none; font-weight:900; cursor:pointer;">Authorize Admin</button>
-                    </div>
-                    ` : ''}
-
-                    <div class="data-card">
-                        <div class="card-header"><h2>Registered Base</h2></div>
-                        <table class="table">
-                            <thead><tr><th>Name</th><th>Identity</th><th>Clearance</th><th>Actions</th></tr></thead>
+                <div class="view-pane c-data">
+                    <div class="c-hdr"><h3><i class="fa-solid fa-users"></i> Member Registry</h3><button class="btn btn-p" style="padding:10px 15px;">Export Data</button></div>
+                    <div class="tbl-w">
+                        <table class="tbl">
+                            <thead><tr><th>Full Name</th><th>Identity</th><th>Clearance</th><th>Status</th><th>Registration</th></tr></thead>
                             <tbody>
-                                ${USERS.map((u,i)=>`
+                                ${STATE.users.map(u=>`
                                     <tr>
                                         <td>${u.name}</td>
-                                        <td style="color:var(--subtext)">${u.email}</td>
-                                        <td><span class="badge ${u.role==='admin'?'badge-warning':u.role==='superadmin'?'badge-danger':'badge-success'}">${u.role||'user'}</span></td>
-                                        <td>
-                                            ${role==='superadmin' && u.role!=='superadmin' ? `<button onclick="deleteUser('${u.email}')" class="btn-circle" style="background:#fef2f2; color:var(--danger);"><i class="fa-solid fa-trash"></i></button>` : '<i class="fa-solid fa-check"></i>'}
-                                        </td>
+                                        <td style="color:var(--sub)">${u.email}</td>
+                                        <td><span class="bdg ${u.role==='user'?'bdg-s':'bdg-p'}">${u.role}</span></td>
+                                        <td><div style="display:flex; align-items:center; gap:8px;"><div style="width:8px; height:8px; background:var(--acc); border-radius:50%;"></div> Active</div></td>
+                                        <td style="color:var(--sub)">14 April 2026</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -247,91 +267,141 @@
             `;
         };
 
-        const createAdmin = () => {
-            const name = document.getElementById('new-adm-name').value;
-            const email = document.getElementById('new-adm-email').value;
-            const pass = document.getElementById('new-adm-pass').value;
-            if(!name || !email || !pass) return Swal.fire('Error','Fill all fields','warning');
-            
-            USERS.push({ name, email, pass, role: 'admin' });
-            storage.setItem(USERS_KEY, JSON.stringify(USERS));
-            Swal.fire('Success','New Sub-Admin Created','success');
-            renderUsers(document.getElementById('main-content'));
-        }
-
-        const renderSupport = (area) => {
-            const tickets = JSON.parse(storage.getItem(SUPPORT_KEY)) || [];
+        const renderSupportDesk = (area) => {
+            const tk = JSON.parse(store.getItem('app_support_tickets')) || [];
             area.innerHTML = `
-                <div class="view-pane">
-                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
-                        ${tickets.length === 0 ? '<p style="grid-column:1/-1; text-align:center; padding:50px; color:var(--subtext);">No Pending Inquiries</p>' : tickets.map((t,i)=>`
-                             <div class="stat-card" style="border:1px solid #f1f5f9;">
-                                <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                                    <span class="badge ${t.type.includes('Chat')?'badge-success':'badge-danger'}">${t.type}</span>
-                                    <small style="color:var(--subtext); font-weight:800;">${t.time}</small>
-                                </div>
-                                <b style="display:block; margin-bottom:5px;">Contact: ${t.user}</b>
-                                <p style="font-size:13px; color:var(--subtext); margin-bottom:20px;">${t.detail}</p>
-                                <div style="display:flex; gap:10px;">
-                                    <button onclick="resolveTicket(${i})" style="flex:1; padding:10px; border-radius:10px; border:none; background:var(--primary); color:white; font-weight:800; cursor:pointer;">Initiate Response</button>
-                                    <button onclick="delTicket(${i})" style="padding:10px; border-radius:10px; border:none; background:var(--danger); color:white; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                             </div>
-                        `).reverse().join('')}
+                <div class="view-pane" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:25px;">
+                    ${tk.length === 0 ? '<div style="grid-column:1/-1; text-align:center; padding:100px;"><i class="fa-solid fa-check-double" style="font-size:50px; color:#cbd5e1; margin-bottom:20px;"></i><h2 style="color:#cbd5e1;">All tickets resolved!</h2></div>' : tk.map((t,i)=>`
+                        <div class="c-stat" style="border:1.5px solid var(--border);">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                                <span class="bdg ${t.type.includes('Chat')?'bdg-p':'bdg-e'}">${t.type}</span>
+                                <small style="color:var(--sub); font-weight:850;">${t.time}</small>
+                            </div>
+                            <b style="font-size:16px; margin-bottom:5px; display:block;">Identity: ${t.user}</b>
+                            <p style="font-size:14px; color:var(--sub); line-height:1.6; margin-bottom:20px;">${t.detail}</p>
+                            <div style="display:flex; gap:12px;">
+                                <button onclick="solveTicket(${i})" class="btn btn-p" style="flex:1; justify-content:center;">Respond</button>
+                                <button onclick="delTicket(${i})" class="btn" style="background:#fef2f2; color:var(--err); padding:12px;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `).reverse().join('')}
+                </div>
+            `;
+        };
+
+        const renderMarketplace = (area) => {
+            const p = JSON.parse(store.getItem('app_products')) || [];
+            area.innerHTML = `
+                <div class="view-pane c-data">
+                    <div class="c-hdr"><h3><i class="fa-solid fa-store"></i> Active Listings</h3><b style="color:var(--p)">${p.length} Units</b></div>
+                    <div class="tbl-w">
+                        <table class="tbl">
+                            <thead><tr><th>Item</th><th>Category</th><th>Price</th><th>Seller</th><th>Action</th></tr></thead>
+                            <tbody>
+                                ${p.length === 0 ? '<tr><td colspan="5" style="text-align:center; padding:50px;">Market is currently empty.</td></tr>' : p.map((i)=>`
+                                    <tr>
+                                        <td><div style="display:flex; align-items:center; gap:12px;"><img src="${i.img||'https://via.placeholder.com/50'}" style="width:40px; height:40px; border-radius:10px; object-fit:cover;"> ${i.name}</div></td>
+                                        <td><span class="bdg bdg-p">${i.category}</span></td>
+                                        <td style="font-weight:900; color:var(--p);">₹${i.price}</td>
+                                        <td style="font-size:12px; color:var(--sub);">${i.sellerEmail}</td>
+                                        <td><button class="btn" style="background:var(--err); color:white; padding:8px 12px; font-size:10px;">Remove</button></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             `;
         };
 
-        const renderSubs = (area) => {
+        const renderTeamRegistry = (area) => {
+            const r = STATE.role;
+            const target = r === 'superadmin' ? 'Admin' : 'Support Agent';
+            const rKey = r === 'superadmin' ? 'admin' : 'agent';
             area.innerHTML = `
-                <div class="view-pane data-card">
-                    <div class="card-header"><h2>Premium Subscriptions</h2></div>
-                    <table class="table">
-                        <thead><tr><th>Student</th><th>Tier</th><th>Expiration</th><th>Revenue</th></tr></thead>
-                        <tbody>
-                            <tr><td>Rahul Kumar</td><td><span class="badge badge-success">Gold Plan</span></td><td>15 May 24</td><td>₹4,999</td></tr>
-                            <tr><td>Sneha Singh</td><td><span class="badge badge-warning">Silver Plan</span></td><td>02 May 24</td><td>₹2,499</td></tr>
-                        </tbody>
-                    </table>
+                <div class="view-pane" style="max-width:800px;">
+                    <div class="c-data" style="background:var(--s); color:white; padding:40px; margin-bottom:40px;">
+                        <h2 style="color:white; margin:0 0 10px; font-weight:900;">Authorize New ${target}</h2>
+                        <p style="color:rgba(255,255,255,0.6); margin-bottom:30px; font-weight:600;">Assign encrypted clearance to a new team member.</p>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                            <input id="tm-name" placeholder="Full Legal Name" style="background:rgba(255,255,255,0.05); color:white; border:none;">
+                            <input id="tm-email" placeholder="Corporate Email" style="background:rgba(255,255,255,0.05); color:white; border:none;">
+                        </div>
+                        <input id="tm-pass" type="password" placeholder="Secure Passphrase" style="background:rgba(255,255,255,0.05); color:white; border:none; margin-bottom:20px;">
+                        <button onclick="registerPersonnel('${rKey}')" class="btn btn-p" style="width:100%; height:55px; justify-content:center; text-transform:uppercase; letter-spacing:1px;">Approve Identity</button>
+                    </div>
                 </div>
             `;
         };
 
-        const broadcast = () => {
-            Swal.fire({
-                title: 'Broadcast Message',
-                input: 'textarea',
-                inputPlaceholder: 'Enter message for all users...',
-                showCancelButton: true
-            }).then(r => { if(r.isConfirmed) Swal.fire('Queued','Message will be dispatched to ${USERS.length} students','success'); });
-        }
-
-        const deleteUser = (email) => {
-            USERS = USERS.filter(u=>u.email!==email);
-            storage.setItem(USERS_KEY, JSON.stringify(USERS));
-            switchTab('users');
+        const registerPersonnel = (role) => {
+            const n = document.getElementById('tm-name').value;
+            const e = document.getElementById('tm-email').value;
+            const p = document.getElementById('tm-pass').value;
+            if(!n || !e || !p) return Swal.fire('Error','Insufficient Identity Data','warning');
+            STATE.users.push({ name: n, email: e, pass: p, role: role });
+            store.setItem('app_users_db', JSON.stringify(STATE.users));
+            Swal.fire('Identity Verified', `Member added as ${role}`, 'success');
+            switchTab('dash');
         };
 
-        const logout = () => {
-            storage.removeItem('admin_is_logged');
-            location.reload();
-        }
-
-        // Real-time Notification Logic
-        const checkNotifications = () => {
-            const tickets = JSON.parse(storage.getItem(SUPPORT_KEY)) || [];
-            const badge = document.querySelector('.header .badge');
-            if(badge) {
-                badge.innerText = tickets.length;
-                badge.style.display = tickets.length > 0 ? 'block' : 'none';
-            }
-            const vc = document.getElementById('ticket-count-val');
-            if(vc) vc.innerText = tickets.length;
+        const renderFinancials = (area) => {
+             area.innerHTML = `
+                <div class="view-pane">
+                    <div class="grid-stats">
+                        <div class="c-stat"><h4>Escrow Balance</h4><div class="v">₹1,85,000</div></div>
+                        <div class="c-stat"><h4>Pending Payouts</h4><div class="v" style="color:var(--wrn)">₹12,400</div></div>
+                    </div>
+                    <div class="c-data">
+                        <div class="c-hdr"><h3><i class="fa-solid fa-piggy-bank"></i> Recent Transactions</h3></div>
+                        <table class="tbl">
+                            <thead><tr><th>ID</th><th>Amount</th><th>Method</th><th>Timestamp</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>#SN-8821</td><td>₹1,200</td><td>UPI</td><td>Today, 14:20</td><td><span class="bdg bdg-s">Completed</span></td></tr>
+                                <tr><td>#SN-8822</td><td>₹450</td><td>Card</td><td>Today, 13:45</td><td><span class="bdg bdg-s">Completed</span></td></tr>
+                                <tr><td>#SN-8823</td><td>₹2,800</td><td>COD</td><td>Yesterday</td><td><span class="bdg bdg-p">Pending</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+             `;
         };
-        setInterval(checkNotifications, 3000);
 
-        if(storage.getItem('admin_is_logged') === 'true') showApp();
+        const triggerLogout = () => { store.removeItem('ax_logged'); location.reload(); };
+
+        const solveTicket = (idx) => {
+            Swal.fire({ title: 'Engage User', input: 'textarea', inputPlaceholder: 'Type professional response...' }).then(res => {
+                if(res.isConfirmed) Swal.fire('Dispatched','Message sent via Enterprise API','success');
+            });
+        };
+
+        // CORE INITIALIZATION
+        if(store.getItem('ax_logged') === 'true') {
+            document.getElementById('auth-view').style.display = 'none';
+            document.getElementById('app-view').style.display = 'flex';
+            
+            document.getElementById('u-name').innerText = STATE.name;
+            document.getElementById('u-initial').innerText = STATE.name.charAt(0);
+            document.getElementById('lvl-badge').innerText = STATE.role;
+
+            const nav = document.getElementById('side-nav');
+            nav.innerHTML = NAV_SCHEMA.map(n => {
+                if(!n.roles.includes(STATE.role)) return '';
+                return `<div class="nav-i ${n.id==='dash'?'active':''}" onclick="switchTab('${n.id}', this)"><i class="fa-solid ${n.icon}"></i> ${n.label}</div>`;
+            }).join('');
+
+            switchTab('dash');
+
+            // REAL-TIME POLLING SIMULATION
+            setInterval(() => {
+                const tick = JSON.parse(store.getItem('app_support_tickets')) || [];
+                const b = document.getElementById('bell-badge');
+                if(b) {
+                    b.innerText = tick.length;
+                    b.style.display = tick.length > 0 ? 'flex' : 'none';
+                }
+            }, 3000);
+        }
     </script>
 </body>
 </html>
